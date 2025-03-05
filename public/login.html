@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-container input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        .success-message {
+            color: green;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Войти в аккаунт</h2>
+        <form id="registrationForm">
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div>
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Войти в аккаунт</button>
+            <div id="passwordError" class="password-error" style="display: none;">Пароль неверный</div>
+            <div id="successMessage" class="success-message" style="display: none;">Вход успешный!</div>
+            <div id="errorMessage" class="error-message" style="display: none;">Ошибка при входе</div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Отменяем стандартное поведение формы
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            
+            const passwordError = document.getElementById("passwordError");
+            const successMessage = document.getElementById("successMessage");
+            const errorMessage = document.getElementById("errorMessage");
+
+            // Скрываем сообщения об ошибках и успехе
+            passwordError.style.display = "none";
+            successMessage.style.display = "none";
+            errorMessage.style.display = "none";
+
+            // Отправка данных на сервер
+            try {
+                const response = await fetch("users/login/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email: email, 
+                                           password: password }),
+                });
+                
+                if (response.ok) {
+                    // Успешная регистрация
+                    successMessage.style.display = "block";
+                    document.getElementById("registrationForm").reset(); // Очистка формы
+                } else {
+                    // Ошибка на сервере
+                    const data = await response.json();
+                    errorMessage.textContent = data.detail || "Ошибка при регистрации";
+                    errorMessage.style.display = "block";
+                }
+            } catch (error) {
+                // Ошибка сети или другая ошибка
+                errorMessage.textContent = "Ошибка при отправке запроса";
+                errorMessage.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
