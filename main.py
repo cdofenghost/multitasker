@@ -1,15 +1,15 @@
-from fastapi import Depends, FastAPI, Query
+from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
 from .routers import users
-from .database import get_engine
-from .models.user import Base, User
+from .database import get_engine, Base
+from .models import user, task, project, subtask, category
 
 app = FastAPI()
 
 @app.on_event("startup")
 def startup():
     print("started up")
+    print(Base.metadata.tables)
     Base.metadata.create_all(bind=get_engine())
 
 app.include_router(users.router)
