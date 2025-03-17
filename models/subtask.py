@@ -2,12 +2,13 @@ from sqlalchemy import Column, Date, ForeignKey, Integer, String, CheckConstrain
 from sqlalchemy.orm import relationship
 from ..database import Base
 
-class SubTask(Base):
+class Subtask(Base):
     __tablename__ = "subtasks"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     task_id = Column(Integer, ForeignKey("tasks.id"))
+    author_id = Column(Integer, ForeignKey("users.id"))
     perfomer_id = Column(Integer, ForeignKey("users.id"))
     deadline = Column(Date)
     priority = Column(Integer)
@@ -16,7 +17,6 @@ class SubTask(Base):
     #attached_files = Column(Integer, ForeignKey("attaches.id"))
 
     # M:1
-    user = relationship("User", back_populates="tasks")
+    author = relationship("User", foreign_keys=[author_id], back_populates="authored_subtasks")
+    performer = relationship("User", foreign_keys=[perfomer_id], back_populates="performed_subtasks")
     task = relationship("Task", back_populates="subtasks")
-    # attach = relationship("Attach", back_populates="tasks")
-    project = relationship("Project", back_populates="tasks")

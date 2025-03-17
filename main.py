@@ -15,9 +15,9 @@ def startup():
 app.include_router(users.router)
 
 @app.get("/register")
-def register():
+async def register():
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/public/register.html")
 
 @app.get("/login")
-def login():
+async def login():
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/public/login.html")

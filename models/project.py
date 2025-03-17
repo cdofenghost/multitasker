@@ -10,6 +10,9 @@ class Project(Base):
     description = Column(String)
     category_id = Column(Integer, ForeignKey("categories.id"))
 
-    # M:1
+    # 1:M
     tasks = relationship("Task", back_populates="project")
+    
+    # M:1
+    category = relationship("Category", back_populates="projects")
 

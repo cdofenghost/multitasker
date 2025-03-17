@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 class Base(DeclarativeBase): 
     pass
 
-DATABASE_URL = "postgresql://user:password@localhost:5432/db"
+DATABASE_URL = "postgresql://postgres:dofenbase@localhost:5432/TestDatabase"
 
 engine = create_engine(DATABASE_URL)
 

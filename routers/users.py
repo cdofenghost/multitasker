@@ -31,25 +31,20 @@ async def get_users(db: Session=Depends(get_db)):
 
 @router.post("/register",
              tags=["authorization"])
-async def register(email: EmailStr = Body(embed=True, pattern="^[a-zA-Z0-9-_.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"),
-                   password: str = Body(embed=True, pattern="^[a-zA-Z0-9-_.]+$", min_length=8, max_length=16),
-                   repeatPassword: str = Body(embed=True, pattern="^[a-zA-Z0-9!#$%&*+-.<=>?@^_]+$", min_length=8, max_length=16),
+async def register(user: UserIn,
                    db: Session = Depends(get_db)):
     
     try: 
-        validated_email = validate_email(email, check_deliverability=True)
+        validated_email = validate_email(user.email, check_deliverability=True)
     except: 
         raise HTTPException(status_code=404, detail="Sent email is invalid!")
     
-    existing_user = db.query(User).filter(User.email == email).first()
+    existing_user = db.query(User).filter(User.email == user.email).first()
 
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    if password != repeatPassword:
-        raise HTTPException(status_code=404, detail="Password did not match repeated password, try typing again.")
 
-    db_user = create_db_user(UserIn(email=email, name="default", password=password))
+    db_user = create_db_user(UserIn(email=user.email, name="default", password=user.password))
     new_user = user_to_db(db_user)
 
     db.add(new_user)
@@ -57,6 +52,7 @@ async def register(email: EmailStr = Body(embed=True, pattern="^[a-zA-Z0-9-_.]+@
 
     return RedirectResponse("/users/login")
         
+
 @router.post("/login",
              tags=["authorization"])
 async def login(email: EmailStr = Body(embed=True, pattern="^[a-zA-Z0-9-_.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"),

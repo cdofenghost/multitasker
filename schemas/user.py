@@ -6,6 +6,6 @@ class UserIn(BaseModel):
     name: str = Field(pattern="[А-Яа-яA-Za-z]+", max_length=50, min_length=2)
 
 class DBUser(BaseModel):
-    email: EmailStr
+    email: EmailStr 
     hashed_password: str
     name: str

@@ -7,18 +7,19 @@ class Task(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    project_id = Column(Integer, ForeignKey("projects.id"))
+    author_id = Column(Integer, ForeignKey("users.id"))
     perfomer_id = Column(Integer, ForeignKey("users.id"))
+    project_id = Column(Integer, ForeignKey("projects.id"))
     deadline = Column(Date)
     priority = Column(Integer)
     color = Column(String)
     description = Column(String)
     #attached_files = Column(Integer, ForeignKey("attaches.id"))
 
-    # M:1
-    user = relationship("User", back_populates="tasks")
-    # attach = relationship("Attach", back_populates="tasks")
-    project = relationship("Project", back_populates="tasks")
-
     # 1:M
-    subtasks = relationship("Subtask", back_populates="task")
+    subtasks = relationship("Subask", back_populates="task")
+
+    # M:1
+    author = relationship("User", foreign_keys=[author_id], back_populates="authored_tasks")
+    performer = relationship("User", foreign_keys=[perfomer_id], back_populates="performed_tasks")
+    project = relationship("Project", back_populates="tasks")
