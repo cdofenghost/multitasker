@@ -12,9 +12,10 @@ class User(Base):
     hashed_password = Column(String)
 
     # 1:M
-    authored_tasks = relationship("Task", back_populates="author")
-    performed_tasks = relationship("Task", back_populates="performer")
-    authored_subtasks = relationship("Task", back_populates="author")
-    performed_subtasks = relationship("Task", back_populates="performer")
-    subtasks = relationship("Subtask", back_populates="user")
+    authored_tasks = relationship("Task", foreign_keys='Task.author_id', back_populates="author")
+    performed_tasks = relationship("Task", foreign_keys='Task.performer_id', back_populates="performer")
+
+    authored_subtasks = relationship("Subtask", foreign_keys='Subtask.author_id', back_populates="author")
+    performed_subtasks = relationship("Subtask", foreign_keys='Subtask.performer_id', back_populates="performer")
+
     categories = relationship("Category", back_populates="user")

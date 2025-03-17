@@ -9,7 +9,7 @@ class Subtask(Base):
     name = Column(String)
     task_id = Column(Integer, ForeignKey("tasks.id"))
     author_id = Column(Integer, ForeignKey("users.id"))
-    perfomer_id = Column(Integer, ForeignKey("users.id"))
+    performer_id = Column(Integer, ForeignKey("users.id"))
     deadline = Column(Date)
     priority = Column(Integer)
     color = Column(String)
@@ -18,5 +18,5 @@ class Subtask(Base):
 
     # M:1
     author = relationship("User", foreign_keys=[author_id], back_populates="authored_subtasks")
-    performer = relationship("User", foreign_keys=[perfomer_id], back_populates="performed_subtasks")
+    performer = relationship("User", foreign_keys=[performer_id], back_populates="performed_subtasks")
     task = relationship("Task", back_populates="subtasks")

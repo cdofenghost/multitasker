@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-from .routers import users
+from .logic import users, user_routes
 from .database import get_engine, Base
 from .models import user, task, project, subtask, category
 
@@ -12,7 +12,7 @@ def startup():
     print(Base.metadata.tables)
     Base.metadata.create_all(bind=get_engine())
 
-app.include_router(users.router)
+app.include_router(user_routes.router)
 
 @app.get("/register")
 async def register():

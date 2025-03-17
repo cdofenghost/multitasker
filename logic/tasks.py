@@ -7,7 +7,7 @@ from passlib.hash import bcrypt
 
 from ..database import get_db
 from ..models.user import User
-from ..schemas.user import UserIn, DBUser
+from ..schemas.user import UserIn
 
 router = APIRouter()
 
