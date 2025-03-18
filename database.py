@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
+from .utils.secret_data import DATABASE_URL
+
 class Base(DeclarativeBase): 
     pass
-
-DATABASE_URL = "postgresql://postgres:dofenbase@localhost:5432/TestDatabase"
 
 engine = create_engine(DATABASE_URL)
 
