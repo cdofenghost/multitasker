@@ -6,6 +6,7 @@ from passlib.hash import bcrypt
 from ..models.user import User
 from ..schemas.user import UserIn
 
+
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -18,6 +19,9 @@ class UserRepository:
 
     def find_user(self, id: int) -> User | None:
         return self.db.query(User).filter(User.id == id).first()
+    
+    def find_user_by_email(self, email: str) -> User | None:
+        return self.db.query(User).filter(User.email == email).first()
     
     def get_users(self, db: Session) -> list[User]:
         return db.query(User).all()   
@@ -41,20 +45,21 @@ class UserService:
 
 
     def register_user(self, user_data: UserIn) -> User | None:
-        print("Обработал")
-
         user = self.__to_user(user_data)
         existing_user = self.user_repository.find_user(user.id)
 
-        validated_email = validate_email(check_deliverability=True)
+        validate_email(check_deliverability=True)
 
         if existing_user:
             return None
         
         return self.user_repository.add_user(user)
 
-    def find_user(self, id: int):
+    def get_user(self, id: int):
         return self.user_repository.find_user(id)
+    
+    def get_user_by_email(self, email: str):
+        return self.user_repository.find_user_by_email(email)
     
     def remove_user(self, id: int):
         return self.user_repository.remove_user(id)
@@ -67,6 +72,12 @@ class UserService:
             return None
         
         return self.user_repository.update_user(user)
+
+    def restore_access(self, email: str) -> User | None:
+        existing_user = self.user_repository.find_user_by_email(email)
+
+        if existing_user is None:
+            return None
 
 
 
