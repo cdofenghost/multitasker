@@ -20,13 +20,13 @@ def send_restoring_mail(receiver_email: str):
 
     subject = "Восстановление доступа"
     code = generate_code()
-    body = f"Привет, это письмо о восстановлении твоего аккаунта.\nТвой код: <b>{code}</b>"
+    body = f"Привет, это письмо о восстановлении твоего аккаунта.<br></br><br>Код для восстановления: <b>{code}</b></br>"
 
     message = MIMEMultipart()
     message["From"] = SENDER_EMAIL
     message["To"] = receiver_email
     message["Subject"] = subject
-    message.attach(MIMEText(body, "plain"))
+    message.attach(MIMEText(body, "html"))
 
     try:
         with smtplib.SMTP(server, port) as host:
@@ -37,3 +37,5 @@ def send_restoring_mail(receiver_email: str):
 
     except Exception as e:
         print(f"Ошибка при отправлении письма: {e}")
+
+    return code

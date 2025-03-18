@@ -23,14 +23,14 @@ class UserRepository:
     def find_user_by_email(self, email: str) -> User | None:
         return self.db.query(User).filter(User.email == email).first()
     
-    def get_users(self, db: Session) -> list[User]:
-        return db.query(User).all()   
+    def get_users(self) -> list[User]:
+        return self.db.query(User).all()   
     
-    def remove_user(self, id: int, db: Session) -> User | None:
-        return db.query(User).filter(User.id == id).delete()
+    def remove_user(self, id: int) -> User | None:
+        return self.db.query(User).filter(User.id == id).delete()
     
     def update_user(self, user: User) -> User:
-        self.db.refresh(user)
+        self.db.merge(user)
         self.db.commit()
         return user
 
@@ -48,7 +48,7 @@ class UserService:
         user = self.__to_user(user_data)
         existing_user = self.user_repository.find_user(user.id)
 
-        validate_email(check_deliverability=True)
+        validate_email(user.email, check_deliverability=True)
 
         if existing_user:
             return None
@@ -58,20 +58,35 @@ class UserService:
     def get_user(self, id: int):
         return self.user_repository.find_user(id)
     
+    def verify_credentials(self, user_data: UserIn) -> User | int:
+        existing_user = self.get_user_by_email(user_data.email)
+        
+        if existing_user is None:
+            return 404
+        
+        if bcrypt.verify(user_data.password, existing_user.hashed_password):
+            return existing_user
+        
+        else:
+            return 403
+
+    
     def get_user_by_email(self, email: str):
         return self.user_repository.find_user_by_email(email)
     
     def remove_user(self, id: int):
         return self.user_repository.remove_user(id)
 
-    def update_user(self, user_data: UserIn) -> User | None:
-        user = self.__to_user(user_data)
-        existing_user = self.user_repository.find_user(user.id)
+    def update_user_credentials(self, user_data: UserIn) -> User | None:
+        existing_user = self.user_repository.find_user_by_email(user_data.email)
 
         if existing_user is None:
             return None
         
-        return self.user_repository.update_user(user)
+        existing_user.hashed_password = bcrypt.hash(user_data.password)
+        existing_user.email = user_data.email
+        
+        return self.user_repository.update_user(existing_user)
 
     def restore_access(self, email: str) -> User | None:
         existing_user = self.user_repository.find_user_by_email(email)

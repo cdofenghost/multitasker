@@ -29,19 +29,22 @@ async def register(user_data: UserIn, service: UserService = Depends(get_user_se
 @router.post("/authorize",
              tags=["User"])
 async def authorize(user_data: UserIn, service: UserService = Depends(get_user_service)):
-    user = service.get_user(user_data)
+    result = service.verify_credentials(user_data)
 
-    if user is None:
+    if result == 404:
         raise HTTPException(status_code=404, detail="Пользователь с таким e-mail не зарегистрирован")
 
-    return {"id": user.id, "name": user.name, "email": user.email}
+    if result == 403:
+        raise HTTPException(status_code=403, detail="Введен неверный пароль")
+
+    return {"id": result.id, "name": result.name, "email": result.email}
 
 
-@router.post("/restore",
+@router.put("/change-password",
              tags=["User"])
-async def restore(email: str, new_password: str, service: UserService = Depends(get_user_service)):
+async def change_password(email: str, new_password: str, service: UserService = Depends(get_user_service)):
     user = service.get_user_by_email(email)
-    service.update_user(UserIn(email=user.email, name=user.name, password=new_password))
+    service.update_user_credentials(UserIn(email=user.email, name=user.name, password=new_password))
 
     return {"message": f"Пароль сменен на {new_password}"}
 
