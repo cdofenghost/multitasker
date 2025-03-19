@@ -8,6 +8,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(String)
+    icon = Column(String)
     category_id = Column(Integer, ForeignKey("categories.id"))
 
     # 1:M

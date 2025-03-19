@@ -44,8 +44,7 @@ class CategoryService:
 
     def __to_category(self, user_id: int, category_data: CategorySchema) -> Category:
         return Category(name=category_data.name, 
-                        color=category_data.color, 
-                        description=category_data.description,
+                        color=category_data.color,
                         user_id=user_id)
 
     def add_category(self, user_id: int, category_data: CategorySchema) -> Category | None:
@@ -62,9 +61,11 @@ class CategoryService:
     def update_category(self, id: int, category_data: CategorySchema) -> Category | None:
         category = self.category_repository.find_category(id)
 
+        if category is None:
+            return None
+        
         category.name = category_data.name
         category.color = category_data.color
-        category.description = category_data.description
 
         self.category_repository.update_category(category)
 

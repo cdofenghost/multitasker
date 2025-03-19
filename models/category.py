@@ -8,7 +8,6 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     color = Column(String)
-    description = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
 
 

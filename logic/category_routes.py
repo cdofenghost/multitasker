@@ -24,7 +24,7 @@ def get_category_service(user_repository: CategoryRepository = Depends(get_categ
 async def add_category(user_id: int, category_data: Category, service: CategoryService = Depends(get_category_service)):
     category = service.add_category(user_id, category_data)
 
-    return {"id": category.id, "name": category.name, "color": category.color, "description": category.description}
+    return {"id": category.id, "name": category.name, "color": category.color}
 
 
 @router.put("/update",
@@ -35,7 +35,7 @@ async def update_category(category_id: int, category_data: Category, service: Ca
     if category is None:
         raise HTTPException(status_code=404, detail="Не удалось обновить категорию - такой категории нет/уже удалена")
 
-    return {"id": category.id, "name": category.name, "color": category.color, "description": category.description}
+    return {"id": category.id, "name": category.name, "color": category.color}
 
 
 @router.delete("/delete",
