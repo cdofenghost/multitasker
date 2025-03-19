@@ -4,7 +4,7 @@ from email_validator import validate_email
 from passlib.hash import bcrypt
 
 from ..models.user import User
-from ..schemas.user import UserIn
+from ..schemas.user import UserCredentialSchema, UserProfileSchema
 
 
 class UserRepository:
@@ -39,12 +39,12 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def __to_user(self, user_data: UserIn):
+    def __to_user(self, user_data: UserCredentialSchema):
         hashed_password = bcrypt.hash(user_data.password)
-        return User(name=user_data.name, email=user_data.email, hashed_password=hashed_password)
+        return User(email=user_data.email, hashed_password=hashed_password)
 
 
-    def register_user(self, user_data: UserIn) -> User | None:
+    def register_user(self, user_data: UserCredentialSchema) -> User | None:
         user = self.__to_user(user_data)
         existing_user = self.user_repository.find_user(user.id)
 
@@ -56,9 +56,10 @@ class UserService:
         return self.user_repository.add_user(user)
 
     def get_user(self, id: int):
+        
         return self.user_repository.find_user(id)
     
-    def verify_credentials(self, user_data: UserIn) -> User | int:
+    def verify_credentials(self, user_data: UserCredentialSchema) -> User | int:
         existing_user = self.get_user_by_email(user_data.email)
         
         if existing_user is None:
@@ -77,7 +78,7 @@ class UserService:
     def remove_user(self, id: int):
         return self.user_repository.remove_user(id)
 
-    def update_user_credentials(self, user_data: UserIn) -> User | None:
+    def update_user_credentials(self, user_data: UserCredentialSchema) -> User | None:
         existing_user = self.user_repository.find_user_by_email(user_data.email)
 
         if existing_user is None:
@@ -93,6 +94,7 @@ class UserService:
 
         if existing_user is None:
             return None
+
 
 
 

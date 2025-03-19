@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 
 from .categories import CategoryRepository, CategoryService
 from ..database import get_db
-from ..utils.sender import send_restoring_mail
-from ..schemas.category import Category
+from ..schemas.category import CategoryCreateSchema, CategoryUpdateSchema
 
 router = APIRouter(prefix="/categories")
 
@@ -21,15 +20,18 @@ def get_category_service(user_repository: CategoryRepository = Depends(get_categ
 
 @router.post("/add",
              tags=["Categories"])
-async def add_category(user_id: int, category_data: Category, service: CategoryService = Depends(get_category_service)):
-    category = service.add_category(user_id, category_data)
+async def add_category(category_data: CategoryCreateSchema, 
+                       service: CategoryService = Depends(get_category_service)):
+    category = service.add_category(category_data)
 
     return {"id": category.id, "name": category.name, "color": category.color}
 
 
-@router.put("/update",
-             tags=["Categories"])
-async def update_category(category_id: int, category_data: Category, service: CategoryService = Depends(get_category_service)):
+@router.put("/update", 
+            tags=["Categories"])
+async def update_category(category_id: int, 
+                          category_data: CategoryUpdateSchema, 
+                          service: CategoryService = Depends(get_category_service)):
     category = service.update_category(category_id, category_data)
 
     if category is None:
@@ -40,7 +42,8 @@ async def update_category(category_id: int, category_data: Category, service: Ca
 
 @router.delete("/delete",
              tags=["Categories"])
-async def delete_category(category_id: int, service: CategoryService = Depends(get_category_service)):
+async def delete_category(category_id: int, 
+                          service: CategoryService = Depends(get_category_service)):
     category = service.remove_category(category_id)
 
     if category is None:

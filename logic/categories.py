@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from ..models.category import Category
-from ..schemas.category import Category as CategorySchema
+from ..schemas.category import CategoryCreateSchema, CategoryUpdateSchema
 
 
 class CategoryRepository:
@@ -42,13 +42,13 @@ class CategoryService:
     def __init__(self, category_repository: CategoryRepository):
         self.category_repository = category_repository
 
-    def __to_category(self, user_id: int, category_data: CategorySchema) -> Category:
+    def __to_category(self, category_data: CategoryCreateSchema) -> Category:
         return Category(name=category_data.name, 
                         color=category_data.color,
-                        user_id=user_id)
+                        user_id=category_data.user_id)
 
-    def add_category(self, user_id: int, category_data: CategorySchema) -> Category | None:
-        category = self.__to_category(user_id, category_data)
+    def add_category(self, category_data: CategoryCreateSchema) -> Category | None:
+        category = self.__to_category(category_data)
 
         return self.category_repository.add_category(category)
 
@@ -58,7 +58,7 @@ class CategoryService:
     def remove_category(self, id: int) -> Category:
         return self.category_repository.remove_category(id)
 
-    def update_category(self, id: int, category_data: CategorySchema) -> Category | None:
+    def update_category(self, category_data: CategoryUpdateSchema) -> Category | None:
         category = self.category_repository.find_category(id)
 
         if category is None:

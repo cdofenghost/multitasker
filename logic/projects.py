@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from ..models.project import Project
-from ..schemas.project import Project as ProjectSchema
+from ..schemas.project import ProjectCreateSchema, ProjectUpdateSchema
 
 
 class ProjectRepository:
@@ -42,14 +42,14 @@ class ProjectService:
     def __init__(self, project_repository: ProjectRepository):
         self.project_repository = project_repository
 
-    def __to_project(self, category_id: int, project_data: ProjectSchema) -> Project:
+    def __to_project(self, project_data: ProjectCreateSchema) -> Project:
         return Project(name=project_data.name, 
                        description=project_data.description, 
                        icon=project_data.icon,
-                       category_id=category_id)
+                       category_id=project_data.category_id)
 
-    def add_project(self, category_id: int, project_data: ProjectSchema) -> Project | None:
-        project = self.__to_project(category_id, project_data)
+    def add_project(self, project_data: ProjectCreateSchema) -> Project:
+        project = self.__to_project(project_data)
 
         return self.project_repository.add_project(project)
 
@@ -59,7 +59,7 @@ class ProjectService:
     def remove_project(self, id: int) -> Project | None:
         return self.project_repository.remove_project(id)
 
-    def update_project(self, id: int, project_data: ProjectSchema) -> Project | None:
+    def update_project(self, id: int, project_data: ProjectUpdateSchema) -> Project | None:
         project = self.project_repository.find_project(id)
 
         if project is None:

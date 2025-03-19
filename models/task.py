@@ -12,7 +12,6 @@ class Task(Base):
     project_id = Column(Integer, ForeignKey("projects.id"))
     deadline = Column(Date)
     priority = Column(Integer)
-    color = Column(String)
     description = Column(String)
     #attached_files = Column(Integer, ForeignKey("attaches.id"))
 

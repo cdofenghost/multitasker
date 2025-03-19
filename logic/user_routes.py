@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .users import UserRepository, UserService, UserIn
+from .users import UserRepository, UserService, UserCredentialSchema, UserProfileSchema
 from ..database import get_db
 from ..utils.sender import send_restoring_mail
 
@@ -20,7 +20,7 @@ def get_user_service(user_repository: UserRepository = Depends(get_user_reposito
 
 @router.post("/register",
              tags=["User"])
-async def register(user_data: UserIn, service: UserService = Depends(get_user_service)):
+async def register(user_data: UserCredentialSchema, service: UserService = Depends(get_user_service)):
     user = service.register_user(user_data)
 
     return {"id": user.id, "name": user.name, "email": user.email}
@@ -28,7 +28,7 @@ async def register(user_data: UserIn, service: UserService = Depends(get_user_se
 
 @router.post("/authorize",
              tags=["User"])
-async def authorize(user_data: UserIn, service: UserService = Depends(get_user_service)):
+async def authorize(user_data: UserCredentialSchema, service: UserService = Depends(get_user_service)):
     result = service.verify_credentials(user_data)
 
     if result == 404:
@@ -42,11 +42,11 @@ async def authorize(user_data: UserIn, service: UserService = Depends(get_user_s
 
 @router.put("/change-password",
              tags=["User"])
-async def change_password(email: str, new_password: str, service: UserService = Depends(get_user_service)):
-    user = service.get_user_by_email(email)
-    service.update_user_credentials(UserIn(email=user.email, name=user.name, password=new_password))
+async def change_password(user_data: UserCredentialSchema, service: UserService = Depends(get_user_service)):
+    user = service.get_user_by_email(user_data.email)
+    service.update_user_credentials()
 
-    return {"message": f"Пароль сменен на {new_password}"}
+    return {"message": f"Пароль сменен на {user_data.password}"}
 
 
 @router.post("/send-restoring-mail",
