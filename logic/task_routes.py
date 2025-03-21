@@ -5,7 +5,7 @@ from .tasks import TaskRepository, TaskService
 from ..database import get_db
 from ..schemas.task import TaskCreateSchema, TaskUpdateSchema
 
-router = APIRouter(prefix="/tasks")
+router = APIRouter(prefix="/task")
 
 
 def get_task_repository(db: Session = Depends(get_db)):
@@ -15,7 +15,7 @@ def get_task_service(user_repository: TaskRepository = Depends(get_task_reposito
     return TaskService(user_repository)
 
 
-@router.post("/add",
+@router.post("/",
              tags=["Tasks"])
 async def add_task(task_data: TaskCreateSchema, 
                    service: TaskService = Depends(get_task_service)):
@@ -31,7 +31,7 @@ async def add_task(task_data: TaskCreateSchema,
             "project_id": task.project_id,
             "priority": task.priority,}
 
-@router.put("/update",
+@router.put("/",
              tags=["Tasks"])
 async def update_task(task_id: int, task_data: TaskUpdateSchema, service: TaskService = Depends(get_task_service)):
     task = service.update_task(task_id, task_data)
@@ -47,7 +47,7 @@ async def update_task(task_id: int, task_data: TaskUpdateSchema, service: TaskSe
             "priority": task.priority,}
 
 
-@router.delete("/delete",
+@router.delete("/",
              tags=["Tasks"])
 async def delete_task(task_id: int, service: TaskService = Depends(get_task_service)):
     task = service.remove_task(task_id)

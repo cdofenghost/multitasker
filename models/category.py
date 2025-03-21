@@ -10,7 +10,6 @@ class Category(Base):
     color = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
 
-
     # 1:M
     projects = relationship("Project", back_populates="category")
     

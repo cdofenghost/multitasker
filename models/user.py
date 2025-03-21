@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -19,3 +19,21 @@ class User(Base):
     performed_subtasks = relationship("Subtask", foreign_keys='Subtask.performer_id', back_populates="performer")
 
     categories = relationship("Category", back_populates="user")
+
+# class AccessToken(Base):
+#     __tablename__ = 'refresh_tokens'
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+#     token = Column(String(100), unique=True, nullable=False)
+#     expires_at = Column(DateTime, nullable=False)
+
+#     user = relationship("User", back_populates="refresh_tokens")
+
+
+# class RevokedToken(Base):
+#     __tablename__ = 'revoked_tokens'
+
+#     id = Column(Integer, primary_key=True, index=True)
+#     token = Column(String(100), unique=True, nullable=False)
+#     revoked_at = Column(DateTime, nullable=False)

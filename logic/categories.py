@@ -17,6 +17,9 @@ class CategoryRepository:
     def find_category(self, id: int) -> Category | None:
         return self.db.query(Category).get(id)
     
+    def get_categories_by_user_id(self, user_id: int) -> list[Category]:
+        return list(self.db.query(Category).filter(Category.user_id == user_id))
+
     def get_categories(self) -> list[Category]:
         return self.db.query(Category).all()
     
@@ -42,24 +45,27 @@ class CategoryService:
     def __init__(self, category_repository: CategoryRepository):
         self.category_repository = category_repository
 
-    def __to_category(self, category_data: CategoryCreateSchema) -> Category:
+    def __to_category(self, user_id: int, category_data: CategoryCreateSchema) -> Category:
         return Category(name=category_data.name, 
                         color=category_data.color,
-                        user_id=category_data.user_id)
+                        user_id=user_id)
 
-    def add_category(self, category_data: CategoryCreateSchema) -> Category | None:
-        category = self.__to_category(category_data)
+    def add_category(self, user_id: int, category_data: CategoryCreateSchema) -> Category | None:
+        category = self.__to_category(user_id, category_data)
 
         return self.category_repository.add_category(category)
 
     def get_category(self, id: int) -> Category:
         return self.category_repository.find_category(id)
     
+    def get_categories_by_user_id(self, user_id: int) -> list[Category]:
+        return self.category_repository.get_categories_by_user_id(user_id)
+
     def remove_category(self, id: int) -> Category:
         return self.category_repository.remove_category(id)
 
-    def update_category(self, category_data: CategoryUpdateSchema) -> Category | None:
-        category = self.category_repository.find_category(id)
+    def update_category(self, category_id: int, category_data: CategoryUpdateSchema) -> Category | None:
+        category = self.category_repository.find_category(category_id)
 
         if category is None:
             return None
@@ -70,3 +76,12 @@ class CategoryService:
         self.category_repository.update_category(category)
 
         return category
+
+    def check_category_id(self, user_id: int, category_id: int) -> bool:
+        categories = self.get_categories_by_user_id(user_id)
+
+        for category in categories:
+            if category_id == category.id:
+                return True
+            
+        return False

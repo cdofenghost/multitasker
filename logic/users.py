@@ -56,7 +56,6 @@ class UserService:
         return self.user_repository.add_user(user)
 
     def get_user(self, id: int):
-        
         return self.user_repository.find_user(id)
     
     def verify_credentials(self, user_data: UserCredentialSchema) -> User | int:
