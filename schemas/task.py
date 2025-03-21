@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from datetime import date
 
 class TaskCreateSchema(BaseModel):
-    project_id: int = Field(gt=0)
     author_id: int = Field(gt=0)
     performer_id: int = Field(gt=0)
 

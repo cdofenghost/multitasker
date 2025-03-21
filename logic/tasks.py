@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 
+from ..models.project import Project
+from ..models.category import Category
 from ..models.task import Task
 from ..schemas.task import TaskCreateSchema, TaskUpdateSchema
 
@@ -13,11 +15,14 @@ class TaskRepository:
 
         return task
 
-    def find_task(self, id: int) -> Task | None:
-        return self.db.query(Task).get(id)
+    def find_task(self, task_id: int) -> Task | None:
+        return self.db.query(Task).filter(Task.id == task_id).first()
     
     def get_tasks(self) -> list[Task]:
         pass
+
+    def get_project_tasks(self, project_id: int) -> list[Task]:
+        return list(self.db.query(Task).filter(Task.project_id == project_id))
     
     def remove_task(self, id: int) -> Task | None:
         task = self.find_task(id)
@@ -36,33 +41,88 @@ class TaskRepository:
 
         return task
 
+    def check_project_ownership(self, user_id: int, project_id: int) -> bool:
+        project = self.db.query(Project).filter(Project.id == project_id).first()
+
+        if project is None:
+            return False
+        
+        category = self.db.query(Category).filter(Category.id == project.category_id,
+                                                  Category.user_id == user_id).first()
+        
+        return False if category is None else True
+
+    def check_task_ownership(self, user_id: int, task_id: int) -> bool:
+        task = self.db.query(Task).filter(Task.id == task_id).first()
+
+        if task is None:
+            return False
+        
+        project = self.db.query(Project).filter(Project.id == task.project_id).first()
+
+        if project is None:
+            return False
+        
+        category = self.db.query(Category).filter(Category.id == project.category_id,
+                                                  Category.user_id == user_id).first()
+        
+        return False if category is None else True
+    
 
 class TaskService:
     def __init__(self, task_repository: TaskRepository):
         self.task_repository = task_repository
 
-    def __to_task(self, task_data: TaskCreateSchema) -> Task:
+    def __to_task(self, project_id: int, task_data: TaskCreateSchema) -> Task:
         return Task(name=task_data.name, 
                     description=task_data.description,
                     author_id=task_data.author_id,
-                    project_id=task_data.project_id,
+                    project_id=project_id,
                     performer_id=task_data.performer_id,
                     deadline=task_data.deadline,
                     priority=task_data.priority,)
 
-    def add_task(self, task_data: TaskCreateSchema) -> Task | None:
-        task = self.__to_task(task_data)
+    def add_task(self, user_id: int, project_id: int, task_data: TaskCreateSchema) -> Task | None:
+        user_is_owner = self.check_project_ownership(user_id, project_id)
+
+        if not user_is_owner:
+            return None
+        
+        task = self.__to_task(project_id, task_data)
 
         return self.task_repository.add_task(task)
 
-    def get_task(self, task_id: int) -> Task:
-        pass
+    def get_task(self, user_id: int, task_id: int) -> Task:
+        task = self.task_repository.find_task(task_id)
+
+        if task is None:
+            return None
+        
+        user_is_owner = self.check_project_ownership(user_id, task.project_id)
+
+        if not user_is_owner:
+            return None
+        
+        return task
     
-    def remove_task(self, task_id: int) -> Task | None:
+    def get_project_tasks(self, user_id: int, project_id: int) -> list[Task]:
+        user_is_owner = self.check_project_ownership(user_id, project_id)
+        
+        if not user_is_owner:
+            return None
+        
+        return self.task_repository.get_project_tasks(project_id)
+    
+    def remove_task(self, user_id: int, task_id: int) -> Task | None:
+        task = self.get_task(user_id, task_id)
+
+        if task is None:
+            return None
+        
         return self.task_repository.remove_task(task_id)
 
-    def update_task(self, task_id: int, task_data: TaskUpdateSchema) -> Task | None:
-        task = self.task_repository.find_task(task_id)
+    def update_task(self, user_id: int, task_id: int, task_data: TaskUpdateSchema) -> Task | None:
+        task = self.get_task(user_id, task_id)
 
         if task is None:
             return None
@@ -75,3 +135,9 @@ class TaskService:
         task.priority=task_data.priority,
         
         return self.task_repository.update_task(task)
+
+    def check_project_ownership(self, user_id: int, project_id: int) -> bool:
+        return self.task_repository.check_project_ownership(user_id, project_id)
+    
+    def check_task_ownership(self, user_id: int, task_id: int) -> bool:
+        return self.task_repository.check_task_ownership(user_id, task_id)
