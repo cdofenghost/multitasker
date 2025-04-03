@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from datetime import date
 
 class TaskCreateSchema(BaseModel):
-    author_id: int = Field(gt=0)
     performer_id: int = Field(gt=0)
 
     name: str = Field(default="Новый проект", max_length=100)

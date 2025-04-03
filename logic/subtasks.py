@@ -25,6 +25,10 @@ class SubtaskRepository:
     def get_task_subtasks(self, task_id: int) -> list[Subtask]:
         return list(self.db.query(Subtask).filter(Subtask.task_id == task_id))
     
+    def get_allocated_subtasks(self, user_id: int) -> list[Task]:
+        subtasks = self.db.query(Task).filter(Task.performer_id == user_id)
+        return list(subtasks)
+    
     def remove_subtask(self, id: int) -> Subtask | None:
         subtask = self.find_subtask(id)
 
@@ -42,26 +46,19 @@ class SubtaskRepository:
 
         return subtask
 
-    def check_subtask_ownership(self, user_id: int, subtask_id: int) -> bool:
-        subtask = self.db.query(Subtask).filter(Subtask.id == subtask_id).first()
+    def check_subtask_ownership(self, user_id: int, task_id: int) -> bool:
+        subtask_author = self.db.query(Task).filter(Task.id == task_id,
+                                                    Task.author_id == user_id).first()
+        
+        # project = self.db.query(Project).filter(Project.id == task.project_id).first()
 
-        if subtask is None:
-            return False
+        # if project is None:
+        #     return False
         
-        task = self.db.query(Task).filter(Task.id == subtask.task_id).first()
-
-        if task is None:
-            return False
+        # category = self.db.query(Category).filter(Category.id == project.category_id,
+        #                                           Category.user_id == user_id).first()
         
-        project = self.db.query(Project).filter(Project.id == task.project_id).first()
-
-        if project is None:
-            return False
-        
-        category = self.db.query(Category).filter(Category.id == project.category_id,
-                                                  Category.user_id == user_id).first()
-        
-        return False if category is None else True
+        return False if subtask_author is None else True
 
     def check_task_ownership(self, user_id: int, task_id: int) -> bool:
         task = self.db.query(Task).filter(Task.id == task_id).first()
@@ -152,3 +149,16 @@ class SubtaskService:
     
     def check_task_ownership(self, user_id: int, task_id: int) -> bool:
         return self.subtask_repository.check_task_ownership(user_id, task_id)
+    
+    def set_performer(self, task_id: int, performer_id: int) -> Task | dict:
+        task = self.subtask_repository.find_subtask(task_id)
+        
+        if task is None:
+            return {'error_code': 404, 'detail': 'Такой таски не существует!'}
+        
+        task.performer_id = performer_id
+        
+        return self.subtask_repository.update_subtask(task)
+    
+    def get_allocated_subtasks(self, user_id: int):
+        return self.subtask_repository.get_allocated_subtasks(user_id)

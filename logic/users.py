@@ -5,14 +5,14 @@ from passlib.hash import bcrypt
 
 from ..models.user import User
 from ..schemas.user import UserCredentialSchema, UserProfileSchema
+from ..utils.utils import generate_name
 
-
+# + таблица ResetCodes
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
     def add_user(self, user: User) -> User:
-        print("Положил")
         self.db.add(user)
         self.db.commit()
         return user
@@ -41,7 +41,7 @@ class UserService:
 
     def __to_user(self, user_data: UserCredentialSchema):
         hashed_password = bcrypt.hash(user_data.password)
-        return User(email=user_data.email, hashed_password=hashed_password)
+        return User(email=user_data.email, name=generate_name(), hashed_password=hashed_password, avatar="/default-icon")
 
 
     def register_user(self, user_data: UserCredentialSchema) -> User | None:
@@ -93,7 +93,7 @@ class UserService:
 
         if existing_user is None:
             return None
-
+        
 
 
 

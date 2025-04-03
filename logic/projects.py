@@ -1,9 +1,14 @@
 from sqlalchemy.orm import Session
 
+# from fastapi.exce
+
+# Рейз 
+
 from ..models.project import Project
 from ..models.category import Category
 from ..schemas.project import ProjectCreateSchema, ProjectUpdateSchema
 
+# ExceptionHandler
 
 class ProjectRepository:
     def __init__(self, db: Session):
@@ -64,6 +69,12 @@ class ProjectService:
                        description=project_data.description, 
                        icon=project_data.icon,
                        category_id=category_id)
+    
+    # def __get(self, id) -> Project:
+    #     res = self.project_repository.get()
+    #     if not res:
+    #         raise NotImplementedError()
+    #     return res
 
     def add_project(self, user_id: int, category_id: int, project_data: ProjectCreateSchema) -> Project | None:
         user_is_owner = self.check_category_ownership(user_id, category_id)

@@ -4,6 +4,7 @@ from ..models.project import Project
 from ..models.category import Category
 from ..models.task import Task
 from ..schemas.task import TaskCreateSchema, TaskUpdateSchema
+from .users import UserRepository, UserService
 
 class TaskRepository:
     def __init__(self, db: Session):
@@ -20,6 +21,10 @@ class TaskRepository:
     
     def get_tasks(self) -> list[Task]:
         pass
+
+    def get_allocated_tasks(self, user_id: int) -> list[Task]:
+        tasks = self.db.query(Task).filter(Task.performer_id == user_id)
+        return list(tasks)
 
     def get_project_tasks(self, project_id: int) -> list[Task]:
         return list(self.db.query(Task).filter(Task.project_id == project_id))
@@ -53,30 +58,39 @@ class TaskRepository:
         return False if category is None else True
 
     def check_task_ownership(self, user_id: int, task_id: int) -> bool:
+        task_author = self.db.query(Task).filter(Task.id == task_id).first()
+        
+        # project = self.db.query(Project).filter(Project.id == task.project_id).first()
+
+        # if project is None:
+        #     return False
+        
+        # category = self.db.query(Category).filter(Category.id == project.category_id,
+        #                                           Category.user_id == user_id).first()
+        
+        return False if task_author is None else True
+    
+    def is_user_in_project(self, user_id: int, task_id: int) -> bool:
         task = self.db.query(Task).filter(Task.id == task_id).first()
 
         if task is None:
             return False
         
-        project = self.db.query(Project).filter(Project.id == task.project_id).first()
+        project = self.db.query(Project).filter(Project.id == task.project_id)
 
         if project is None:
             return False
         
-        category = self.db.query(Category).filter(Category.id == project.category_id,
-                                                  Category.user_id == user_id).first()
         
-        return False if category is None else True
-    
 
 class TaskService:
     def __init__(self, task_repository: TaskRepository):
         self.task_repository = task_repository
 
-    def __to_task(self, project_id: int, task_data: TaskCreateSchema) -> Task:
+    def __to_task(self, user_id: int, project_id: int, task_data: TaskCreateSchema) -> Task:
         return Task(name=task_data.name, 
                     description=task_data.description,
-                    author_id=task_data.author_id,
+                    author_id=user_id,
                     project_id=project_id,
                     performer_id=task_data.performer_id,
                     deadline=task_data.deadline,
@@ -88,7 +102,7 @@ class TaskService:
         if not user_is_owner:
             return None
         
-        task = self.__to_task(project_id, task_data)
+        task = self.__to_task(user_id, project_id, task_data)
 
         return self.task_repository.add_task(task)
 
@@ -141,3 +155,16 @@ class TaskService:
     
     def check_task_ownership(self, user_id: int, task_id: int) -> bool:
         return self.task_repository.check_task_ownership(user_id, task_id)
+
+    def set_performer(self, task_id: int, performer_id: int) -> Task | dict:
+        task = self.task_repository.find_task(task_id)
+        
+        if task is None:
+            return {'error_code': 404, 'detail': 'Такой таски не существует!'}
+        
+        task.performer_id = performer_id
+        
+        return self.task_repository.update_task(task)
+    
+    def get_allocated_tasks(self, user_id: int):
+        return self.task_repository.get_allocated_tasks(user_id)

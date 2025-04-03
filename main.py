@@ -4,7 +4,9 @@ from .logic import user_routes, category_routes, project_routes, task_routes, su
 from .database import get_engine, Base
 from .models import user, task, project, subtask, category
 
-app = FastAPI()
+app = FastAPI(
+    #exception_handlers=
+)
 
 @app.on_event("startup")
 def startup():

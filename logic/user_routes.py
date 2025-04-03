@@ -1,6 +1,7 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import OAuth2PasswordRequestForm
+#from fastapi.security import 
 from sqlalchemy.orm import Session
 
 from .users import UserRepository, UserService, UserCredentialSchema, UserProfileSchema
@@ -22,9 +23,12 @@ def get_user_repository(db: Session = Depends(get_db)):
 def get_user_service(user_repository: UserRepository = Depends(get_user_repository)):
     return UserService(user_repository)
 
+ServiceDependency = Annotated[UserService, Depends(get_user_service)]
+UserDependency = Annotated[dict, Depends(get_current_user)]
 
 @router.post("/register")
-async def register(user_data: UserCredentialSchema, service: UserService = Depends(get_user_service)):
+async def register(user_data: UserCredentialSchema, 
+                   service: ServiceDependency):
     user = service.register_user(user_data)
 
     return {"id": user.id, "name": user.name, "email": user.email}
@@ -46,17 +50,23 @@ async def authorize(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.get("/get")
+@router.get("/get", response_model=dict)
 async def get_user(user: dict = Depends(get_current_user)):
     return user
 
-
+# Токен
 @router.put("/change-password")
-async def change_password(user_data: UserCredentialSchema, service: UserService = Depends(get_user_service)):
-    user = service.get_user_by_email(user_data.email)
-    service.update_user_credentials()
+async def change_password(service: ServiceDependency,
+                          user_id: int,
+                          new_password: str = Query(min_length=8, max_length=16, pattern="^[A-Za-z0-9!#$%&*+-.<=>?@^_]+$")):
+    existing_user = service.get_user(user_id)
 
-    return {"message": f"Пароль сменен на {user_data.password}"}
+    if existing_user is None:
+        raise HTTPException(status_code=404, detail="Возникла ошибка: пользователь не найден")
+    
+    service.update_user_credentials(UserCredentialSchema(email=existing_user.email, password=new_password))
+
+    return {"message": f"Пароль сменен на {new_password}"}
 
 
 @router.post("/send-restoring-mail",
