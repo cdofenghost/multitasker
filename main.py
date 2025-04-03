@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from .logic import user_routes, category_routes, project_routes, task_routes, subtask_routes
 from .database import get_engine, Base
-from .models import user, task, project, subtask, category
+from .models import user, task, project, subtask, category, restoring_codes
 
-app = FastAPI()
+app = FastAPI(
+    #exception_handlers=
+)
 
 @app.on_event("startup")
 def startup():
