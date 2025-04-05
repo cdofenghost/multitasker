@@ -6,6 +6,6 @@ class RestoringCode(Base):
     __tablename__ = "restoring_codes"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_email = Column(String)
+    user_email = Column(String, unique=True)
     code = Column(Integer, default=None)
 

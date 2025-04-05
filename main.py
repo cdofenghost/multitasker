@@ -5,6 +5,7 @@ from .database import get_engine, Base
 from .models import user, task, project, subtask, category, restoring_codes
 
 app = FastAPI(
+    title="MultiTasker"
     #exception_handlers=
 )
 

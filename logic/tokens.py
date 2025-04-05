@@ -20,7 +20,6 @@ def generate_access_token(user_id: int, email: str) -> str:
 
     return jwt.encode(encode, SECRET_TOKEN_KEY, algorithm=TOKEN_ALGORITHM)
 
-
 async def get_current_user(token: str = Security(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_TOKEN_KEY, algorithms=[TOKEN_ALGORITHM])
@@ -45,6 +44,8 @@ async def get_current_user(token: str = Security(oauth2_scheme), db: Session = D
         print("Недействительный токен")
         raise HTTPException(status_code=401, detail="Недействительный токен")
 
+def decode_token(token: str):
+    return jwt.decode(token, SECRET_TOKEN_KEY, algorithms=[TOKEN_ALGORITHM])
 # def revoke_refresh_token(refresh_token: str, db: Session):
 #     revoked_token = RevokedToken(token=refresh_token, revoked_at=datetime.datetime.utcnow())
 

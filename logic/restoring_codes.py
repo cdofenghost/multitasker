@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from ..models.restoring_codes import RestoringCode
 from ..schemas.restoring_codes import (
@@ -12,8 +13,8 @@ class RestoringCodeRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def __to_code_model(self, code_schema: RestoringCodeCreateSchema) -> RestoringCode:
-        return RestoringCode(user_email=code_schema.user_email, code=code_schema.code)
+    def __to_code_model(self, code_schema: RestoringCodeSchema) -> RestoringCode:        
+        return RestoringCode(**code_schema.model_dump())
     
     def add_code(self, code_schema: RestoringCodeCreateSchema) -> RestoringCodeSchema:
         code = self.__to_code_model(code_schema)
@@ -21,15 +22,20 @@ class RestoringCodeRepository:
         self.db.add(code)
         self.db.commit()
 
-        return RestoringCodeSchema(code_id=code.id, user_email=code.user_email, code=code.code)
+        return RestoringCodeSchema(id=code.id, user_email=code.user_email, code=code.code)
 
     def find_code(self, code_id: int) -> RestoringCodeSchema | None:
         code = self.db.query(RestoringCode).filter(RestoringCode.id == code_id).first()
 
-        return RestoringCodeSchema(code_id=code.id, user_email=code.user_email, code=code.code)
+        return RestoringCodeSchema(id=code.id, user_email=code.user_email, code=code.code)
     
-    def find_code_by_email(self, user_email: str) -> RestoringCodeSchema | None:
-        return self.db.query(RestoringCode).filter(RestoringCode.user_email == user_email).first()
+    def find_code_by_email(self, user_email: str) -> RestoringCodeSchema:
+        code = self.db.query(RestoringCode).filter(RestoringCode.user_email == user_email).first()
+
+        if code is None:
+            raise NoResultFound()
+        
+        return RestoringCodeSchema(id=code.id, user_email=code.user_email, code=code.code)
     
     def revoke_code(self, code_schema: RestoringCodeRevokeSchema) -> RestoringCodeSchema:
         code = self.find_code_by_email(code_schema.user_email)
@@ -42,7 +48,7 @@ class RestoringCodeRepository:
         self.db.merge(code)
         self.db.commit()
 
-        return RestoringCodeSchema(code_id=code.code_id, user_email=code.user_email, code=code.code)
+        return RestoringCodeSchema(id=code.code_id, user_email=code.user_email, code=code.code)
     
     def get_codes(self) -> list[RestoringCode]:
         pass
@@ -55,19 +61,19 @@ class RestoringCodeRepository:
     #     return list(subtasks)
     
     def remove_code(self, code_id: int) -> RestoringCodeSchema | None:
-        code = self.find_code(code_id)
+        code = self.db.query(RestoringCode).filter(RestoringCode.id == code_id).first()
 
-        if code is None:
-            return None
-        
-        self.db.query(RestoringCode).filter(code.id == code_id).delete()
+        self.db.query(RestoringCode).filter(RestoringCode.id == code_id).delete()
         self.db.commit()
 
-        return RestoringCodeSchema(code_id=code.id, user_email=code.user_email, code=code.code)
+        return RestoringCodeSchema(id=code.id, user_email=code.user_email, code=code.code)
     
     def update_code(self, code_schema: RestoringCodeSchema) -> RestoringCodeSchema:
         code = self.__to_code_model(code_schema)
 
+        print(code_schema.model_dump().items())
+
+        print(f"Object: {code.id=}, {code.user_email=}, {code.code=}")
         self.db.merge(code)
         self.db.commit()
 
@@ -83,21 +89,15 @@ class RestoringCodeService:
 
     def get_code_by_email(self, user_email: str) -> RestoringCodeSchema | None:
         code = self.code_repository.find_code_by_email(user_email)
-
-        if code is None:
-            return None
         
         return code
     
     def remove_code(self, code_data: RestoringCodeSchema) -> RestoringCodeSchema | None:
+        return self.code_repository.remove_code(code_data.id)
+
+    def update_code(self, code_data: RestoringCodeUpdateSchema) -> RestoringCodeSchema | None:
         code = self.get_code_by_email(code_data.user_email)
 
-        if code is None:
-            return None
-        
-        return self.code_repository.remove_code(code.id)
+        code.code = code_data.code
 
-    def update_subtask(self, code_data: RestoringCodeUpdateSchema) -> RestoringCodeSchema | None:
-        code = self.get_code_by_email(code_data.user_email)
-
-        return self.code_repository.update_code(code_data)
+        return self.code_repository.update_code(code)
