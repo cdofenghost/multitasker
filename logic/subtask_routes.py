@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .users import UserRepository, UserService
+from .users import UserRepository, UserService, UserSchema
 
 from .tokens import get_current_user
 
@@ -27,7 +27,7 @@ def get_user_service(user_repository: UserRepository = Depends(get_user_reposito
 
 UserServiceDependency = Annotated[UserService, Depends(get_user_service)]
 ServiceDependency = Annotated[SubtaskService, Depends(get_task_service)]
-UserDependency = Annotated[dict, Depends(get_current_user)]
+UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
 
 @router.post("/")
@@ -35,8 +35,7 @@ async def add_subtask(task_id: int,
                       task_data: SubtaskCreateSchema, 
                       service: ServiceDependency,
                       user: UserDependency):
-    user_id = user["user_id"]
-    subtask = service.add_subtask(user_id, task_id, task_data)
+    subtask = service.add_subtask(user.id, task_id, task_data)
 
     if subtask is None:
         raise HTTPException(detail=" о шибка таск не дабавлен")
@@ -54,8 +53,7 @@ async def update_subtask(subtask_id: int,
                          task_data: SubtaskUpdateSchema, 
                          service: ServiceDependency,
                          user: UserDependency):
-    user_id = user["user_id"]
-    subtask = service.update_subtask(user_id, subtask_id, task_data)
+    subtask = service.update_subtask(user.id, subtask_id, task_data)
 
     if subtask is None:
         raise HTTPException(detail=" о шибка таск не дабавлен")
@@ -72,8 +70,7 @@ async def update_subtask(subtask_id: int,
 async def delete_subtask(subtask_id: int, 
                          service: ServiceDependency,
                          user: UserDependency):
-    user_id = user["user_id"]
-    subtask = service.remove_subtask(user_id, subtask_id)
+    subtask = service.remove_subtask(user.id, subtask_id)
 
     if subtask is None:
         raise HTTPException(detail=" о шибка таск не дабавлен")
@@ -89,8 +86,7 @@ async def delete_subtask(subtask_id: int,
 async def get_task_subtasks(task_id: int,
                             service: ServiceDependency,
                             user: UserDependency):
-    user_id = user["user_id"]
-    projects = service.get_task_subtasks(user_id, task_id)
+    projects = service.get_task_subtasks(user.id, task_id)
 
     if projects is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение задач проекта.")
@@ -101,8 +97,7 @@ async def get_task_subtasks(task_id: int,
 async def get_allocated_subtasks(project_id: int,
                               service: ServiceDependency,
                               user: UserDependency):
-    user_id = user["user_id"]
-    tasks = service.get_allocated_subtasks(user_id)
+    tasks = service.get_allocated_subtasks(user.id)
 
     if tasks is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение задач проекта.")
@@ -111,17 +106,16 @@ async def get_allocated_subtasks(project_id: int,
 
 @router.put("/performer")
 async def set_subtask_performer(task_id: int,
-                             performer_email: str,
-                             service: ServiceDependency,
-                             user: UserDependency,
-                             user_service: UserServiceDependency):
+                                performer_email: str,
+                                service: ServiceDependency,
+                                user: UserDependency,
+                                user_service: UserServiceDependency):
     performer = user_service.get_user_by_email(performer_email)
 
     if performer is None:
         raise HTTPException(status_code=404, detail="Пользователь с таким e-mail не зарегистрирован!")
         
-    user_id = user["user_id"]
-    is_user_owner = service.check_task_ownership(user_id, task_id)
+    is_user_owner = service.check_task_ownership(user.id, task_id)
 
     if not is_user_owner:
         raise HTTPException(status_code=403, detail="Вы не являетесь автором этой задачи.")

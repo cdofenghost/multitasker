@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .tokens import get_current_user
+from .tokens import get_current_user, UserSchema
 from .tasks import TaskRepository, TaskService
 from ..database import get_db
 from ..schemas.task import TaskCreateSchema, TaskUpdateSchema
@@ -25,15 +25,14 @@ def get_user_service(user_repository: UserRepository = Depends(get_user_reposito
 
 UserServiceDependency = Annotated[UserService, Depends(get_user_service)]
 ServiceDependency = Annotated[TaskService, Depends(get_task_service)]
-UserDependency = Annotated[dict, Depends(get_current_user)]
+UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
 @router.post("/")
 async def add_task(project_id: int,
                    task_data: TaskCreateSchema, 
                    service: ServiceDependency,
                    user: UserDependency):
-    user_id = user["user_id"]
-    task = service.add_task(user_id, project_id, task_data)
+    task = service.add_task(user.id, project_id, task_data)
 
     if task is None:
         raise HTTPException(status_code=403, detail=" о шибка таск не дабавлен")
@@ -49,8 +48,7 @@ async def add_task(project_id: int,
 async def get_project_tasks(project_id: int,
                             service: ServiceDependency,
                             user: UserDependency):
-    user_id = user["user_id"]
-    projects = service.get_project_tasks(user_id, project_id)
+    projects = service.get_project_tasks(user.id, project_id)
 
     if projects is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение задач проекта.")
@@ -61,8 +59,7 @@ async def get_project_tasks(project_id: int,
 async def get_allocated_tasks(project_id: int,
                             service: ServiceDependency,
                             user: UserDependency):
-    user_id = user["user_id"]
-    tasks = service.get_allocated_tasks(user_id)
+    tasks = service.get_allocated_tasks(user.id)
 
     if tasks is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение задач проекта.")
@@ -75,8 +72,8 @@ async def update_task(task_id: int,
                       task_data: TaskUpdateSchema, 
                       service: ServiceDependency,
                       user: UserDependency):
-    user_id = user["user_id"]
-    task = service.update_task(user_id, task_id, task_data)
+
+    task = service.update_task(user.id, task_id, task_data)
 
     if task is None:
         raise HTTPException(status_code=403, detail=" о шибка таск не абнавлен")

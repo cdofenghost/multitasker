@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Annotated
 
+from .users import UserSchema
 from .projects import ProjectRepository, ProjectService
 from ..database import get_db
 from ..schemas.project import ProjectCreateSchema, ProjectUpdateSchema
@@ -17,17 +19,18 @@ router = APIRouter(prefix="/project",
 def get_project_repository(db: Session = Depends(get_db)):
     return ProjectRepository(db)
 
-def get_project_service(user_repository: ProjectRepository = Depends(get_project_repository)):
-    return ProjectService(user_repository)
+def get_project_service(project_repository: ProjectRepository = Depends(get_project_repository)):
+    return ProjectService(project_repository)
 
+ServiceDependency = Annotated[ProjectService, Depends(get_project_service)]
+UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
 @router.post("/")
 async def add_project(category_id: int, 
                       project_data: ProjectCreateSchema, 
-                      service: ProjectService = Depends(get_project_service),
-                      user: dict = Depends(get_current_user)):
-    user_id = user["user_id"]
-    project = service.add_project(user_id, category_id, project_data)
+                      service: ServiceDependency,
+                      user: UserDependency):
+    project = service.add_project(user.id, category_id, project_data)
 
     if project is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на добавление проекта.")
@@ -40,10 +43,9 @@ async def add_project(category_id: int,
 
 @router.get("/all")
 async def get_category_projects(category_id: int,
-                                service: ProjectService = Depends(get_project_service),
-                                user: dict = Depends(get_current_user)):
-    user_id = user["user_id"]
-    projects = service.get_projects_by_category_id(user_id, category_id)
+                                service: ServiceDependency,
+                                user: UserDependency):
+    projects = service.get_projects_by_category_id(user.id, category_id)
 
     if projects is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение проектов.")
@@ -54,11 +56,10 @@ async def get_category_projects(category_id: int,
 @router.put("/")
 async def update_project(project_id: int, 
                          project_data: ProjectUpdateSchema, 
-                         service: ProjectService = Depends(get_project_service),
-                         user: dict = Depends(get_current_user)):
+                         service: ServiceDependency,
+                         user: UserDependency):
     
-    user_id = user["user_id"]
-    project = service.update_project(user_id, project_id, project_data)
+    project = service.update_project(user.id, project_id, project_data)
 
     if project is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на обновление проекта.")
@@ -71,11 +72,10 @@ async def update_project(project_id: int,
 
 @router.delete("/")
 async def delete_project(project_id: int, 
-                         service: ProjectService = Depends(get_project_service),
-                         user: dict = Depends(get_current_user)):
+                         service: ServiceDependency,
+                         user: UserDependency):
     
-    user_id = user["user_id"]
-    project = service.remove_project(user_id, project_id)
+    project = service.remove_project(user.id, project_id)
 
     if project is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на добавление проекта.")

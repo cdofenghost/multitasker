@@ -1,37 +1,85 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 
 from email_validator import validate_email
 from passlib.hash import bcrypt
 
 from ..models.user import User
-from ..schemas.user import UserCredentialSchema, UserProfileSchema
+from ..schemas.user import UserCredentialSchema, UserProfileUpdateSchema, UserProfileSchema, UserSchema
 from ..utils.utils import generate_name
+from .exceptions import IncorrectPasswordError
 
 # + таблица ResetCodes
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def add_user(self, user: User) -> User:
+    def __to_new_user(self, user_data: UserCredentialSchema):
+        hashed_password = bcrypt.hash(user_data.password)
+        return User(email=user_data.email, name=generate_name(), hashed_password=hashed_password, icon="/default-icon")
+    
+    # def __to_user(self, user_data: UserProfileSchema):
+    #     user = User(id=user_data.id, name=user_data.name, email=user_data.email, icon=user_data.icon)
+
+    #     return user
+    
+
+    def add_user(self, user_schema: UserCredentialSchema) -> UserSchema:
+        user = self.__to_new_user(user_schema)
+
         self.db.add(user)
         self.db.commit()
-        return user
 
-    def find_user(self, id: int) -> User | None:
-        return self.db.query(User).filter(User.id == id).first()
+        return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
+
+    def find_user(self, id: int) -> UserSchema | None:
+        user = self.db.query(User).filter(User.id == id).first()
+
+        if user is None:
+            raise NoResultFound()
+            
+        return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
     
-    def find_user_by_email(self, email: str) -> User | None:
-        return self.db.query(User).filter(User.email == email).first()
+    def find_user_by_email(self, email: str) -> UserSchema | None:
+        user = self.db.query(User).filter(User.email == email).first()
+
+        if user is None:
+            raise NoResultFound()
+        
+        return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
     
-    def get_users(self) -> list[User]:
-        return self.db.query(User).all()   
+    def get_users(self) -> list[UserSchema]:
+        users = list(self.db.query(User).all())
+
+        return [UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
+                for user in users]
     
-    def remove_user(self, id: int) -> User | None:
-        return self.db.query(User).filter(User.id == id).delete()
+    def remove_user(self, id: int) -> UserSchema | None:
+        user = self.db.query(User).filter(User.id == id).first()
+
+        if user is None:
+            raise NoResultFound()
+        
+        self.db.delete(user)
+
+        return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
     
-    def update_user(self, user: User) -> User:
+    def update_user(self, user_id: int, user_schema: UserProfileUpdateSchema | UserCredentialSchema) -> UserSchema:
+        user = self.db.query(User).filter(User.id == user_id).first()
+
+        if type(user_schema) is UserCredentialSchema:
+            user.email = user_schema.email
+            user.hashed_password = bcrypt.hash(user_schema.password)
+
+        if type(user_schema) is UserProfileUpdateSchema:
+            user.email = user_schema.email
+            user.hashed_password = bcrypt.hash(user_schema.password)
+            user.name = user_schema.name
+            user.icon = user_schema.icon
+
         self.db.merge(user)
         self.db.commit()
+
         return user
 
 
@@ -39,61 +87,37 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def __to_user(self, user_data: UserCredentialSchema):
-        hashed_password = bcrypt.hash(user_data.password)
-        return User(email=user_data.email, name=generate_name(), hashed_password=hashed_password, avatar="/default-icon")
-
-
-    def register_user(self, user_data: UserCredentialSchema) -> User | None:
-        user = self.__to_user(user_data)
-        existing_user = self.user_repository.find_user(user.id)
-
-        validate_email(user.email, check_deliverability=True)
-
-        if existing_user:
-            return None
+    def register_user(self, user_data: UserCredentialSchema) -> UserSchema | None:
+        validate_email(user_data.email, check_deliverability=True)
         
-        return self.user_repository.add_user(user)
+        return self.user_repository.add_user(user_data)
 
-    def get_user(self, id: int):
-        return self.user_repository.find_user(id)
+    def get_user(self, user_id: int) -> UserSchema:
+        return self.user_repository.find_user(user_id)
     
-    def verify_credentials(self, user_data: UserCredentialSchema) -> User | int:
-        existing_user = self.get_user_by_email(user_data.email)
-        
-        if existing_user is None:
-            return 404
-        
-        if bcrypt.verify(user_data.password, existing_user.hashed_password):
-            return existing_user
-        
-        else:
-            return 403
+    def verify_credentials(self, user_data: UserCredentialSchema) -> UserSchema:
+        existing_user = self.get_user_by_email(email=user_data.email)
 
-    
-    def get_user_by_email(self, email: str):
+        if not bcrypt.verify(user_data.password, existing_user.hashed_password):
+            raise IncorrectPasswordError
+        
+        return existing_user
+        
+    def get_user_by_email(self, email: str) -> UserSchema:
         return self.user_repository.find_user_by_email(email)
     
-    def remove_user(self, id: int):
+    def remove_user(self, id: int) -> UserSchema:
         return self.user_repository.remove_user(id)
 
-    def update_user_credentials(self, user_data: UserCredentialSchema) -> User | None:
-        existing_user = self.user_repository.find_user_by_email(user_data.email)
-
-        if existing_user is None:
-            return None
+    def update_user_credentials(self, user_id: int, user_data: UserCredentialSchema) -> UserSchema:
+        return self.user_repository.update_user(user_id, user_data)
         
-        existing_user.hashed_password = bcrypt.hash(user_data.password)
-        existing_user.email = user_data.email
-        
-        return self.user_repository.update_user(existing_user)
+    def update_user_in_profile(self, user_id: int, user_data: UserProfileUpdateSchema) -> UserSchema:
+        existing_user = self.user_repository.find_user(user_id)
 
-    def restore_access(self, email: str) -> User | None:
-        existing_user = self.user_repository.find_user_by_email(email)
+        return self.user_repository.update_user(user_id=user_id, user_schema=user_data)
 
-        if existing_user is None:
-            return None
-        
+
 
 
 

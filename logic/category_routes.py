@@ -1,7 +1,8 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
+from .users import UserSchema
 from .categories import CategoryRepository, CategoryService
 from ..database import get_db
 from ..schemas.category import CategoryCreateSchema, CategoryUpdateSchema
@@ -20,15 +21,13 @@ def get_category_service(user_repository: CategoryRepository = Depends(get_categ
     return CategoryService(user_repository)
 
 ServiceDependency = Annotated[CategoryService, Depends(get_category_service)]
-UserDependency = Annotated[dict, Depends(get_current_user)]
+UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
 @router.post("/")
 async def add_category(category_data: CategoryCreateSchema, 
                        service: ServiceDependency,
                        user: UserDependency):
-    user_id = user["user_id"]
-    
-    category = service.add_category(user_id, category_data)
+    category = service.add_category(user.id, category_data)
 
     return {"id": category.id, "name": category.name, "color": category.color}
 
@@ -45,11 +44,11 @@ async def update_category(category_id: int,
 
     return {"id": category.id, "name": category.name, "color": category.color}
 
+
 @router.get("/all")
 async def get_all_user_categories(service: ServiceDependency,
                                   user: UserDependency):
-    user_id = user["user_id"]
-    categories = service.get_categories_by_user_id(user_id)
+    categories = service.get_categories_by_user_id(user.id)
 
     return {"categories": categories}
 
@@ -58,8 +57,9 @@ async def get_all_user_categories(service: ServiceDependency,
              tags=["Categories"])
 async def delete_category(category_id: int, 
                           service: ServiceDependency,
-                          user: UserDependency):
-    if not service.check_category_id(user["user_id"], category_id):
+                          user: UserDependency,
+                          response: Response):
+    if not service.check_category_id(user.id, category_id):
         raise HTTPException(status_code=403, detail="Неправомерное удаление данных")
     
     category = service.remove_category(category_id)

@@ -1,12 +1,16 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 #from fastapi.security import 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 
+from email_validator import EmailUndeliverableError
+
+from .exceptions import IncorrectPasswordError
+
 from .restoring_codes import RestoringCodeCreateSchema, RestoringCodeUpdateSchema
-from .users import UserRepository, UserService, UserCredentialSchema, UserProfileSchema
+from .users import UserRepository, UserService, UserCredentialSchema, UserProfileUpdateSchema, UserSchema
 from .restoring_codes import RestoringCodeRepository, RestoringCodeService, RestoringCodeSchema
 from ..database import get_db
 from ..utils.sender import send_restoring_mail
@@ -37,33 +41,48 @@ UserDependency = Annotated[dict, Depends(get_current_user)]
 
 CodeServiceDependency = Annotated[RestoringCodeService, Depends(get_code_service)]
 
+
 @router.post("/register")
 async def register(user_data: UserCredentialSchema, 
                    service: ServiceDependency):
-    user = service.register_user(user_data)
+    
+    try:
+        existing_user = service.get_user_by_email(email=user_data.email)
+        raise HTTPException(status_code=400, detail="Пользователь с таким email уже зарегистирован! Попробуйте авторизоваться.")
+    
+    except NoResultFound:
+        try:
+            user = service.register_user(user_data)
 
-    return {"id": user.id, "name": user.name, "email": user.email}
+        except EmailUndeliverableError as e:
+            raise HTTPException(status_code=418, detail=e.args[0])
+
+        return {"id": user.id, "name": user.name, "email": user.email}
 
 
-@router.post("/authorize")
-async def authorize(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], service: UserService = Depends(get_user_service)):
-    user_data = UserCredentialSchema(email=form_data.username, password=form_data.password)
-    result = service.verify_credentials(user_data)
+@router.post("/authorize", response_model=dict)
+async def authorize(form_data: UserCredentialSchema, #OAuth2PasswordRequestForm
+                    service: ServiceDependency,
+                    response: Response):
+    try:
+        result = service.verify_credentials(form_data)
 
-    if result == 404:
+    except NoResultFound:
         raise HTTPException(status_code=404, detail="Пользователь с таким e-mail не зарегистрирован")
 
-    if result == 403:
+    except IncorrectPasswordError:
         raise HTTPException(status_code=403, detail="Введен неверный пароль")
     
     token = generate_access_token(result.id, result.email)
+    response.set_cookie("token", token)
 
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.get("/get", response_model=dict)
-async def get_user(user: dict = Depends(get_current_user)):
+@router.get("/get", response_model=UserSchema)
+async def get_user(user: UserSchema = Depends(get_current_user)):
     return user
+
 
 @router.post("/verify-code")
 async def verify_restoring_code(email: str, 
@@ -93,7 +112,7 @@ async def verify_restoring_code(email: str,
 
 
 # Токен
-@router.put("/change-password")
+@router.put("/change-password", response_model=dict)
 async def change_password(service: ServiceDependency,
                           code_service: CodeServiceDependency,
                           token: str,
@@ -133,12 +152,11 @@ async def send_restore_mail(email: str,
 
     code = send_restoring_mail(email)
 
-    existing_code = code_service.get_code_by_email(user_email=email)
-
-    if existing_code:
+    try:
+        existing_code = code_service.get_code_by_email(user_email=email)
         result = code_service.update_code(RestoringCodeSchema(id=existing_code.id, user_email=email, code=code))
-        return result
-    
-    result = code_service.add_code(RestoringCodeCreateSchema(user_email=email, code=code))
+
+    except NoResultFound:
+        result = code_service.add_code(RestoringCodeCreateSchema(user_email=email, code=code))
 
     return result
