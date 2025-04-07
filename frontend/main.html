@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <div style=" width: 100%; height: 100%;">
+    <div style="width: 100%; height: 100%;">
         <header>
             <div style="display: flex; align-items:center; justify-content: flex-start; height: 10%; background-color: white; gap: 16px; padding: 24px;">
                 <img style="display: inline-block; align-content: left;" src="/static/Logo.png">
@@ -23,30 +23,36 @@
             </div>
     
         </header>
-        <main style="background-color: white; display: flexbox; height: 90%; border: 4px solid black;">
-            <div class="main-container">
+        <main style="background-color: white; height: 90%;">
+            <div class="main-container" style="display: flexbox; align-content: flex-start; vertical-align: top">
+                <div style="padding: 12px;">
+                    <button id="add-button" class="add-button" onclick="toAddCategory(window.location.href)">
+                        <i class="fas fa-plus" style="color: #007AFF;"></i>
+                        Создать категорию
+                    </button>
+                </div>
                 <div id="category-container" style="vertical-align: top;">
                 </div>
             </div>
         </main>
-        <footer style="background-color: white; border: 4px solid black;">
+        <footer style="background-color: white;">
             <div style="display: flex; box-shadow: 0 -6px 6px rgba(0, 0, 0, 0.2); border-radius: 10px;">
-                <button type="toHome" onclick="toHome()"  style="display: inline-block; border-top-left-radius: 10px;">
-                    <i class="fas fa-home" style="color: black;"></i>
+                <button class="footer-button" type="toHome" onclick="toHome(window.location.href)"  style="display: inline-block; border-top-left-radius: 10px;">
+                    <i class="fas fa-home" style="color: #007AFF;"></i>
                     <br>
-                    <text style="text-align: center; font-weight: 100; color: black">Моё</text>
+                    <text style="text-align: center; font-weight: 100; color: #007AFF">Моё</text>
                 </button>   
-                <button type="toTasks" onclick="toTasks()" style="display: inline-block;">
+                <button class="footer-button" type="toTasks" onclick="toTasks(window.location.href)" style="display: inline-block;">
                     <i class="fas fa-list-check" style="color: black;"></i>
                     <br>
-                    <text style="text-align: center; font-weight: 100; color: black">Назначено</text>
+                    <text style="text-align: center; font-weight: 100; color: black">Задачи</text>
                 </button>
-                <button type="toCalendar"onclick="toCalendar()" style="display: inline-block;">
+                <button class="footer-button" type="toCalendar"onclick="toCalendar(window.location.href)" style="display: inline-block;">
                     <i class="fas fa-calendar" style="color: black;"></i>
                     <br>
                     <text style="text-align: center; font-weight: 100; color: black">Календарь</text>
                 </button>
-                <button type="toProfile" onclick="toProfile()" display: inline-block; border-top-right-radius: 10px;">
+                <button class="footer-button" type="toProfile" onclick="toProfile(window.location.href)" style="display: inline-block; border-top-right-radius: 10px;">
                     <i class="fas fa-user" style="color: black;"></i>
                     <br>
                     <text style="text-align: center; font-weight: 100; color: black">Профиль</text>

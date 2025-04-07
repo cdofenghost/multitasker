@@ -25,7 +25,7 @@ def get_project_service(project_repository: ProjectRepository = Depends(get_proj
 ServiceDependency = Annotated[ProjectService, Depends(get_project_service)]
 UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
-@router.post("/")
+@router.post("/{category_id}")
 async def add_project(category_id: int, 
                       project_data: ProjectCreateSchema, 
                       service: ServiceDependency,
@@ -41,7 +41,7 @@ async def add_project(category_id: int,
             "icon": project.icon,}
 
 
-@router.get("/all")
+@router.get("/all/{category_id}")
 async def get_category_projects(category_id: int,
                                 service: ServiceDependency,
                                 user: UserDependency):

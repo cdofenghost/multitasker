@@ -9,11 +9,11 @@ class Project(Base):
     name = Column(String)
     description = Column(String)
     icon = Column(String)
-    category_id = Column(Integer, ForeignKey("categories.id"))
+    category_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"))
 
     # 1:M
-    tasks = relationship("Task", back_populates="project")
+    tasks = relationship("Task", cascade="all, delete", back_populates="project")
     
     # M:1
-    category = relationship("Category", back_populates="projects")
+    category = relationship("Category", cascade="all, delete", back_populates="projects")
 

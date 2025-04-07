@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/other/styles.css">
+    <link rel="icon" href="/static/Logo.png" type="image/x-icon">
+    <title>MultiTasker</title>
+    <style>
+        body {
+            width: 414px; 
+            height: 896px; 
+            max-height: 896px;
+            max-width: 414px;
+            text-align: center; 
+            margin: auto; 
+            align-content: center;
+            background-color: #E5E5E5;
+            font-family: Ubuntu, sans-serif;
+
+            justify-content: center;
+            align-items: center;
+        }
+        .main-container {
+            background-color: white; 
+            width: 100%;
+            height: 100%;
+
+            text-align: center; 
+            align-content: center;
+        }
+        .form-container {
+            background-color: #fff;
+            border-radius: 8px;
+            align-content: center;
+            width: auto;
+            height: auto;
+            padding: 24px;
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container input {
+            width: 93%;
+            height: 34px;
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: Ubuntu;
+        }
+        .form-container input:focus {
+            border-color: #606060;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            height: 54px;
+            background-color: #000000;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: Ubuntu;
+            font-weight: 500;
+
+            transition: ease-out background-color 0.3s;
+        }
+        button:hover {
+            background-color: #606060;
+            transition: ease-in background-color 0.1s;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        .success-message {
+            color: green;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div style="padding-top: 24px; width: 100%; height: 100%;">
+        <main style="background-color: white; display: flexbox; height: 80%;">
+            <div class="main-container">
+                <div>
+                    <img src="/static/Saly-12.png">
+                </div>
+                <div style="padding: 12px;">
+                    <h2>Multi-Tasker</h2>
+                    <text style="font-weight: 300;">Самый удобный инструмент для <b>отслеживания ваших задач</b></text>
+                </div>
+                <div style="padding: 12px;">
+                    <button style="margin-bottom: 12px;" onclick="toLogin(window.location.href)">Вход</button>
+                    <button style="background-color: #D8D8D8; color: black;" onclick="toRegister(window.location.href)">Регистрация</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/redirections.js"></script>
+</body>
+</html>

@@ -94,9 +94,18 @@ body {
 
     transition: ease-out background-color 0.3s;
 }
-button:hover {
+
+.footer-button:hover {
     background-color: #aaaaaa;
     transition: ease-in background-color 0.1s;
+}
+
+.exit-button:hover {
+    background-color: #d6a3a3;
+    color: #fff;
+
+    transition: ease-in-out background-color 0.1s;
+    transition: ease-in-out color 0.1s;
 }
 .error-message {
     color: red;

@@ -23,38 +23,38 @@
             </div>
     
         </header>
-        <main style="background-color: white; display: flexbox; height: 90%; border: 4px solid black; padding: 12px;">
+        <main style="background-color: white; display: flexbox; height: 90%; padding: 12px;">
             <div class="main-container">
                 <div id="profile-container">
-                    <img id="user-icon" src="/static/user-square.svg" style="width: 128px; height: 128px; border-radius: 50%;">
+                    <img id="user-icon" src="/static/flight.gif" style="width: 128px; height: 128px; border-radius: 50%;">
                     <h2 id="user-name">Имя пользователя</h2>
                     <text id="user-email">user@example.com</text>
-                    <button class="black-button" style="height: 56px;">Сменить пароль</button>
-                    <button class="exit-button" type="toProfile" onclick="logout()" style="height: 56px;">Выйти из приложения</button>
+                    <button class="black-button" style="height: 56px; margin-top: 12px;">Сменить пароль</button>
+                    <button class="exit-button" type="toProfile" onclick="logout(window.location.href)" style="height: 56px; margin-top: 12px;">Выйти из приложения</button>
                 </div>
             </div>
         </main>
-        <footer style="background-color: white; border: 4px solid black;">
+        <footer style="background-color: white;">
             <div style="display: flex; box-shadow: 0 -6px 6px rgba(0, 0, 0, 0.2); border-radius: 10px;">
-                <button class="white-button" type="toHome" onclick="toHome()"  style="display: inline-block; border-top-left-radius: 10px;">
+                <button class="white-button" type="toHome" onclick="toHome(window.location.href)"  style="display: inline-block; border-top-left-radius: 10px;">
                     <i class="fas fa-home" style="color: black;"></i>
                     <br>
                     <text style="text-align: center; font-weight: 100; color: black">Моё</text>
                 </button>   
-                <button class="white-button" type="toTasks" onclick="toTasks()" style="display: inline-block;">
+                <button class="white-button" type="toTasks" onclick="toTasks(window.location.href)" style="display: inline-block;">
                     <i class="fas fa-list-check" style="color: black;"></i>
                     <br>
-                    <text style="text-align: center; font-weight: 100; color: black">Назначено</text>
+                    <text style="text-align: center; font-weight: 100; color: black">Задачи</text>
                 </button>
-                <button class="white-button" type="toCalendar"onclick="toCalendar()" style="display: inline-block;">
+                <button class="white-button" type="toCalendar"onclick="toCalendar(window.location.href)" style="display: inline-block;">
                     <i class="fas fa-calendar" style="color: black;"></i>
                     <br>
                     <text style="text-align: center; font-weight: 100; color: black">Календарь</text>
                 </button>
-                <button class="white-button" type="toProfile" onclick="toProfile()" display: inline-block; border-top-right-radius: 10px;">
-                    <i class="fas fa-user" style="color: black;"></i>
+                <button class="white-button" type="toProfile" onclick="toProfile(window.location.href)" style="display: inline-block; border-top-right-radius: 10px;">
+                    <i class="fas fa-user" style="color: #007AFF;"></i>
                     <br>
-                    <text style="text-align: center; font-weight: 100; color: black">Профиль</text>
+                    <text style="text-align: center; font-weight: 100; color: #007AFF">Профиль</text>
                 </button>
             </div>
         </footer>

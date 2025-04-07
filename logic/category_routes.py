@@ -53,6 +53,15 @@ async def get_all_user_categories(service: ServiceDependency,
     return {"categories": categories}
 
 
+@router.get("/{category_id}")
+async def get_category(category_id: int,
+                       service: ServiceDependency,
+                       user: UserDependency):
+    category = service.get_category(category_id)
+
+    return category
+
+
 @router.delete("/",
              tags=["Categories"])
 async def delete_category(category_id: int, 

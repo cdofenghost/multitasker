@@ -136,7 +136,7 @@ async def change_password(service: ServiceDependency,
     if existing_user is None:
         raise HTTPException(status_code=404, detail="Возникла ошибка: пользователь не найден")
     
-    service.update_user_credentials(UserCredentialSchema(email=existing_user.email, password=new_password))
+    service.update_user_credentials(user_id, UserCredentialSchema(email=existing_user.email, password=new_password))
 
     return {"message": f"Пароль сменен на {new_password}"}
 

@@ -8,10 +8,10 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     color = Column(String)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
 
     # 1:M
-    projects = relationship("Project", back_populates="category")
+    projects = relationship("Project", cascade="all, delete", back_populates="category")
     
     # M:1
-    user = relationship("User", back_populates="categories")
+    user = relationship("User", cascade="all, delete", back_populates="categories")

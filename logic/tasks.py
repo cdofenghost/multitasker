@@ -25,6 +25,10 @@ class TaskRepository:
     def get_allocated_tasks(self, user_id: int) -> list[Task]:
         tasks = self.db.query(Task).filter(Task.performer_id == user_id)
         return list(tasks)
+    
+    def get_authored_tasks(self, user_id: int) -> list[Task]:
+        tasks = self.db.query(Task).filter(Task.author_id == user_id)
+        return list(tasks)
 
     def get_project_tasks(self, project_id: int) -> list[Task]:
         return list(self.db.query(Task).filter(Task.project_id == project_id))
@@ -168,3 +172,6 @@ class TaskService:
     
     def get_allocated_tasks(self, user_id: int):
         return self.task_repository.get_allocated_tasks(user_id)
+    
+    def get_authored_tasks(self, user_id: int):
+        return self.task_repository.get_authored_tasks(user_id)

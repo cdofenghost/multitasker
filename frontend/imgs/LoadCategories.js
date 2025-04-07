@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 });
 async function loadCategories() 
 {
-  
     const responseDiv = document.getElementById('response2');
     try {
         const response = await fetch("http://127.0.0.1:8000/category/all", {
@@ -60,6 +59,7 @@ async function fetchAndDisplayCategories() {
         const colorElement = document.createElement('div');
 
         categoryElement.className = 'category';
+        categoryElement.id = category.id;
         categoryElement.style.display = "flex";
         categoryElement.style.alignItems = "center";
         categoryElement.style.padding = "12px";
@@ -68,6 +68,7 @@ async function fetchAndDisplayCategories() {
         categoryElement.style.backgroundColor = "#F5F5F5";
         categoryElement.style.borderRadius = "10px";
         categoryElement.style.marginBottom = "12px";
+        categoryElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/category/${category.id}`);
         // Устанавливаем цвет фона из данных категории
         colorElement.className = 'category-color';
         

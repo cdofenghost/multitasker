@@ -56,10 +56,20 @@ async def get_project_tasks(project_id: int,
     return projects
 
 @router.get("/allocated")
-async def get_allocated_tasks(project_id: int,
-                            service: ServiceDependency,
-                            user: UserDependency):
+async def get_allocated_tasks(service: ServiceDependency,
+                              user: UserDependency):
     tasks = service.get_allocated_tasks(user.id)
+
+    if tasks is None:
+        raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение задач проекта.")
+
+    return tasks
+
+
+@router.get("/authored")
+async def get_authored_tasks(service: ServiceDependency,
+                              user: UserDependency):
+    tasks = service.get_authored_tasks(user.id)
 
     if tasks is None:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение задач проекта.")
