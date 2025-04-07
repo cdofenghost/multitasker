@@ -83,6 +83,14 @@ async def authorize(form_data: UserCredentialSchema, #OAuth2PasswordRequestForm
 async def get_user(user: UserSchema = Depends(get_current_user)):
     return user
 
+@router.get("/", response_model=UserSchema)
+async def get_user_by_id(user_id: int, service: ServiceDependency, user: UserSchema = Depends(get_current_user)):
+    return service.get_user(user_id)
+
+@router.get("/by-email", response_model=UserSchema)
+async def get_user_by_email(email: str, service: ServiceDependency, user: UserSchema = Depends(get_current_user)):
+    return service.get_user_by_email(email)
+
 
 @router.post("/verify-code")
 async def verify_restoring_code(email: str, 

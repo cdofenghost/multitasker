@@ -59,6 +59,7 @@ class TaskRepository:
         category = self.db.query(Category).filter(Category.id == project.category_id,
                                                   Category.user_id == user_id).first()
         
+        print(f"Ownership: {False if category is None else True}")
         return False if category is None else True
 
     def check_task_ownership(self, user_id: int, task_id: int) -> bool:

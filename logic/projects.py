@@ -47,6 +47,7 @@ class ProjectRepository:
         category = self.db.query(Category).filter(Category.id == category_id,
                                                   Category.user_id == user_id).first()
         
+        print(f"Ownership {False if category is None else True}, {user_id=}, {category_id=}")
         return False if category is None else True
 
     def check_project_ownership(self, user_id: int, project_id: int) -> bool:
@@ -92,7 +93,7 @@ class ProjectService:
         if project is None:
             return None
         
-        user_is_owner = self.check_category_ownership(project.category_id, user_id)
+        user_is_owner = self.check_category_ownership(user_id, project.category_id)
 
         if not user_is_owner:
             return None

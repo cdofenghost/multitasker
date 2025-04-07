@@ -29,6 +29,7 @@ function switchToAuthored() {
 
 async function fetchAndDisplayAuthoredTasks() {
   const task_container = document.getElementById("authored-task-container");
+  task_container.style.display = "none";
     try {
       // 1. Делаем GET-запрос к API
       const response = await fetch('http://127.0.0.1:8000/task/authored');
@@ -96,7 +97,6 @@ async function fetchAndDisplayAuthoredTasks() {
 
 async function fetchAndDisplayAllocatedTasks() {
   const task_container = document.getElementById("allocated-task-container");
-  task_container.style.display = "none";
     try {
       // 1. Делаем GET-запрос к API
       const response = await fetch('http://127.0.0.1:8000/task/allocated');

@@ -76,3 +76,15 @@ async def add_project_to_category(id: int):
 @app.get("/app/add-category", tags=["App"])
 async def add_category():
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/category-create.html")
+
+@app.get("/app/project/{id}")
+async def join_project(id: int):
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/project.html")
+
+@app.get("/app/project/{id}/add-task")
+async def join_project(id: int):
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/task-create.html")
+
+@app.get("/app/project/{id}/edit")
+async def join_project(id: int):
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/project-edit.html")

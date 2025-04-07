@@ -1,11 +1,11 @@
-# from sqlalchemy import Column, Integer, String, Float, Date
-# from sqlalchemy.orm import relationship
-# from ..database import Base
+from sqlalchemy import Column, Integer, String, Float, Date
+from sqlalchemy.orm import relationship
+from ..database import Base
 
 # Посмотреть, как передавать файлы в БД
 
-# class Attach(Base):
-#     __tablename__ = "attaches"
+class Attach(Base):
+    __tablename__ = "attaches"
 
-#     id = Column(Integer, primary_key=True, index=True)
-#     path = Column(String)
+    id = Column(Integer, primary_key=True, index=True)
+    path = Column(String)

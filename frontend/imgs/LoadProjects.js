@@ -65,7 +65,7 @@ async function fetchAndDisplayProjects() {
         projectElement.style.marginBottom = "12px";
         projectElement.style.textAlign = "left";
 
-        projectElement.onclick = () => window.location.replace("http://127.0.0.1:8000/app/category");
+        projectElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/project/${project.id}`);
         // Устанавливаем цвет фона из данных категории
         
         // Добавляем название категории
@@ -81,6 +81,9 @@ async function fetchAndDisplayProjects() {
         const categoryNameElement = document.createElement('div');
         categoryNameElement.innerText = category.name;
         categoryNameElement.style.backgroundColor = category.color;
+
+        if (findColorWithMaxBrightness(category.color) < 150) { categoryNameElement.style.color = "white"; }
+        
         categoryNameElement.style.borderRadius = "10px";
         categoryNameElement.style.padding = "6px";
         categoryNameElement.style.width = "max-content";
@@ -104,6 +107,30 @@ async function fetchAndDisplayProjects() {
       // errorElement.textContent = 'Не удалось загрузить категории';
       // projects_container.appendChild(errorElement);
     }
+  }
+
+  function findColorWithMaxBrightness(color) {
+    console.log(color, color.length);
+    var r, g, b;
+    if (color.length == 7)
+    {
+      r = color[1] + color[2];
+      g = color[3] + color[4];
+      b = color[5] + color[6];
+    }
+
+    else if (color.length == 4)
+    {
+      r = color[1];
+      g = color[2];
+      b = color[3];
+    }
+
+    else { return 255; }
+
+    console.log("number: " + Math.max(Number("0x"+r), Number("0x"+g), Number("0x"+b)));
+    return Math.max(Number("0x"+r), Number("0x"+g), Number("0x"+b));
+
   }
   
 

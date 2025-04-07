@@ -52,6 +52,16 @@ async def get_category_projects(category_id: int,
 
     return projects
 
+@router.get("/")
+async def get_project(project_id: int,
+                      service: ServiceDependency,
+                      user: UserDependency):
+    projects = service.get_project(user.id, project_id)
+
+    if projects is None:
+        raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение проекта.")
+
+    return projects
 
 @router.put("/")
 async def update_project(project_id: int, 

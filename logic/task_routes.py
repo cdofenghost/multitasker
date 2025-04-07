@@ -100,8 +100,7 @@ async def update_task(task_id: int,
 async def delete_task(task_id: int, 
                       service: ServiceDependency,
                       user: UserDependency):
-    user_id = user["user_id"]
-    task = service.remove_task(user_id, task_id)
+    task = service.remove_task(user.id, task_id)
 
     if task is None:
         raise HTTPException(status_code=403, detail=" о шибка таск не дабавлен")
@@ -124,8 +123,7 @@ async def set_task_performer(task_id: int,
     if performer is None:
         raise HTTPException(status_code=404, detail="Пользователь с таким e-mail не зарегистрирован!")
         
-    user_id = user["user_id"]
-    is_user_owner = service.check_task_ownership(user_id, task_id)
+    is_user_owner = service.check_task_ownership(user.id, task_id)
 
     if not is_user_owner:
         raise HTTPException(status_code=403, detail="Вы не являетесь автором этой задачи.")
