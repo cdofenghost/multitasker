@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from .logic import user_routes, category_routes, project_routes, task_routes, subtask_routes, profile_routes
+from .logic import user_routes, category_routes, project_routes, task_routes, subtask_routes, profile_routes, attachment_routes
 from .database import get_engine, Base
-from .models import user, task, project, subtask, category, restoring_codes
+from .models import user, task, project, subtask, category, restoring_codes, attachment
 
 app = FastAPI(
     title="MultiTasker",
@@ -24,6 +24,7 @@ app.include_router(project_routes.router)
 app.include_router(task_routes.router)
 app.include_router(subtask_routes.router)
 app.include_router(profile_routes.router)
+app.include_router(attachment_routes.router)
 
 @app.get("/app", tags=["App"])
 async def start():

@@ -4,8 +4,9 @@ from ..database import Base
 
 # Посмотреть, как передавать файлы в БД
 
-class Attach(Base):
-    __tablename__ = "attaches"
+class Attachment(Base):
+    __tablename__ = "attachments"
 
     id = Column(Integer, primary_key=True, index=True)
-    path = Column(String)
+    user_id = Column(Integer)
+    path = Column(String, unique=True)

@@ -23,6 +23,11 @@ class CategoryRepository:
     def get_categories(self) -> list[Category]:
         return self.db.query(Category).all()
     
+    def get_projects_count(self, category_id: int) -> int:
+        from ..models.project import Project
+
+        return len(list(self.db.query(Project).filter(Project.category_id == category_id)))
+    
     def remove_category(self, id: int) -> Category | None:
         category = self.db.query(Category).get(id)
 
@@ -61,6 +66,9 @@ class CategoryService:
     def get_categories_by_user_id(self, user_id: int) -> list[Category]:
         return self.category_repository.get_categories_by_user_id(user_id)
 
+    def get_projects_count(self, category_id: int) -> int:
+        return self.category_repository.get_projects_count(category_id)
+    
     def remove_category(self, id: int) -> Category:
         return self.category_repository.remove_category(id)
 

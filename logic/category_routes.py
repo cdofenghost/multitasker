@@ -61,6 +61,17 @@ async def get_category(category_id: int,
 
     return category
 
+@router.get("/count/projects")
+async def get_projects_count(category_id: int,
+                          service: ServiceDependency,
+                          user: UserDependency):
+    amount = service.get_projects_count(category_id)
+
+    if amount is None:
+        raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение проекта.")
+
+    return amount
+
 
 @router.delete("/",
              tags=["Categories"])

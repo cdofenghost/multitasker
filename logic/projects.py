@@ -3,9 +3,7 @@ from sqlalchemy.orm import Session
 # from fastapi.exce
 
 # Рейз 
-
 from ..models.project import Project
-from ..models.category import Category
 from ..schemas.project import ProjectCreateSchema, ProjectUpdateSchema
 
 # ExceptionHandler
@@ -26,6 +24,11 @@ class ProjectRepository:
     def get_projects_by_category_id(self, category_id: int) -> list[Project]:
         return list(self.db.query(Project).filter(Project.category_id == category_id))
     
+    def get_tasks_count(self, project_id: int) -> int:
+        from ..models.task import Task
+
+        return len(list(self.db.query(Task).filter(Task.project_id == project_id)))
+    
     def remove_project(self, project_id: int) -> Project | None:
         project = self.find_project(project_id)
 
@@ -43,7 +46,9 @@ class ProjectRepository:
 
         return project
 
-    def check_category_ownership(self, user_id: int, category_id: int) -> bool:    
+    def check_category_ownership(self, user_id: int, category_id: int) -> bool:
+        from ..models.category import Category
+
         category = self.db.query(Category).filter(Category.id == category_id,
                                                   Category.user_id == user_id).first()
         
@@ -51,6 +56,8 @@ class ProjectRepository:
         return False if category is None else True
 
     def check_project_ownership(self, user_id: int, project_id: int) -> bool:
+        from ..models.category import Category
+
         project = self.db.query(Project).filter(Project.id == project_id).first()
 
         if project is None:
@@ -107,6 +114,14 @@ class ProjectService:
             return None
         
         return self.project_repository.get_projects_by_category_id(category_id)
+    
+    def get_tasks_count(self, user_id: int, project_id: int):
+        user_is_owner = self.check_project_ownership(user_id, project_id)
+        
+        if not user_is_owner:
+            return None
+        
+        return self.project_repository.get_tasks_count(project_id)
     
     def remove_project(self, user_id: int, project_id: int) -> Project | None:
         project = self.get_project(user_id, project_id)

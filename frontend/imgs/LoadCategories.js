@@ -54,24 +54,44 @@ async function fetchAndDisplayCategories() {
       container.className = 'categories-container';
       
       // 4. Для каждой категории создаем HTML-элемент
-      categories["categories"].forEach(category => {
+      for (key in categories["categories"]) {
+        category = categories["categories"][key];
         const categoryElement = document.createElement('div');
         const colorElement = document.createElement('div');
+        var projectAmount;
 
-        categoryElement.className = 'category';
+        console.log(category);
+        try {
+          const response = await fetch(`http://127.0.0.1:8000/category/count/projects?category_id=${category.id}`);
+
+          projectAmount = await response.json();
+        }
+
+        catch (error){
+          console.log(error);
+        }
+
+        const mainElement = document.createElement('div');
+
+        mainElement.className = `category-${category.id}`;
+        mainElement.id = category.id;
+        mainElement.style.alignItems = "center";
+        mainElement.style.padding = "12px";
+        mainElement.style.marginLeft = "12px";
+        mainElement.style.marginRight = "12px";
+        mainElement.style.backgroundColor = "#F5F5F5";
+        mainElement.style.borderRadius = "10px";
+        mainElement.style.marginBottom = "12px";
+        mainElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/category/${category.id}`);
+
+        categoryElement.className = `category-name-container-${category.id}`;
         categoryElement.id = category.id;
         categoryElement.style.display = "flex";
         categoryElement.style.alignItems = "center";
-        categoryElement.style.padding = "12px";
-        categoryElement.style.marginLeft = "12px";
-        categoryElement.style.marginRight = "12px";
-        categoryElement.style.backgroundColor = "#F5F5F5";
-        categoryElement.style.borderRadius = "10px";
-        categoryElement.style.marginBottom = "12px";
-        categoryElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/category/${category.id}`);
+        console.log(category.id);
         // Устанавливаем цвет фона из данных категории
+
         colorElement.className = 'category-color';
-        
         colorElement.style.backgroundColor = category.color;
         colorElement.style.width = "24px";
         colorElement.style.height = "48px";
@@ -89,12 +109,18 @@ async function fetchAndDisplayCategories() {
         nameElement.style.width = "100%";
         nameElement.style.textAlign = "left";
         
+        const projectAmountElement = document.createElement("div");
+        projectAmountElement.style.textAlign = "left";
+        projectAmountElement.textContent = `${get_project_amount_text(await projectAmount)}`;
+
+        mainElement.appendChild(categoryElement);
+        mainElement.appendChild(projectAmountElement);
         categoryElement.appendChild(nameElement);
         categoryElement.appendChild(colorElement);
-        container.appendChild(categoryElement);
+        container.appendChild(mainElement);
 
         console.log(categoryElement);
-      });
+      };
       
       // 5. Добавляем контейнер на страницу
       category_container.appendChild(container);
@@ -109,4 +135,36 @@ async function fetchAndDisplayCategories() {
     }
   }
   
+  function get_project_amount_text(amount) {
+    baseText = `${amount} проект`;
+
+    last_number = Number(String(amount)[String(amount).length-1]);
+    if (amount < 21)
+    {
+      if (amount == 0 || amount > 5)
+      {
+        return baseText + 'ов';
+      }
+      
+      else if (amount == 1)
+      {
+        return baseText;
+      }
+
+      else { return baseText + 'а'; }
+    }
+
+    else
+    {
+      if (last_number == 1)
+      {
+        return baseText;
+      }
+      else if (last_number > 1 && last_number < 5)
+      {
+        return baseText + 'а';
+      }
+      else { return baseText + 'ов'; }
+    }
+  }
 
