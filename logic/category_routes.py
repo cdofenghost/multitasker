@@ -1,11 +1,12 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 
 from .users import UserSchema
 from .categories import CategoryRepository, CategoryService
 from ..database import get_db
-from ..schemas.category import CategoryCreateSchema, CategoryUpdateSchema
+from ..schemas.category import CategoryCreateSchema, CategoryUpdateSchema, CategorySchema
 from .tokens import get_current_user
 
 router = APIRouter(prefix="/category", tags=["Categories"])
@@ -23,16 +24,16 @@ def get_category_service(user_repository: CategoryRepository = Depends(get_categ
 ServiceDependency = Annotated[CategoryService, Depends(get_category_service)]
 UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
-@router.post("/")
+@router.post("/", response_model=CategorySchema)
 async def add_category(category_data: CategoryCreateSchema, 
                        service: ServiceDependency,
                        user: UserDependency):
     category = service.add_category(user.id, category_data)
 
-    return {"id": category.id, "name": category.name, "color": category.color}
+    return category
 
 
-@router.put("/")
+@router.put("/", response_model=CategorySchema)
 async def update_category(category_id: int, 
                           category_data: CategoryUpdateSchema, 
                           service: ServiceDependency,
@@ -42,18 +43,18 @@ async def update_category(category_id: int,
     if category is None:
         raise HTTPException(status_code=404, detail="Не удалось обновить категорию - такой категории нет/уже удалена")
 
-    return {"id": category.id, "name": category.name, "color": category.color}
+    return category
 
 
-@router.get("/all")
+@router.get("/all", response_model=list[CategorySchema])
 async def get_all_user_categories(service: ServiceDependency,
                                   user: UserDependency):
     categories = service.get_categories_by_user_id(user.id)
 
-    return {"categories": categories}
+    return categories
 
 
-@router.get("/{category_id}")
+@router.get("/{category_id}", response_model=CategorySchema)
 async def get_category(category_id: int,
                        service: ServiceDependency,
                        user: UserDependency):
@@ -61,7 +62,7 @@ async def get_category(category_id: int,
 
     return category
 
-@router.get("/count/projects")
+@router.get("/count/projects", response_model=int)
 async def get_projects_count(category_id: int,
                           service: ServiceDependency,
                           user: UserDependency):
@@ -73,8 +74,7 @@ async def get_projects_count(category_id: int,
     return amount
 
 
-@router.delete("/",
-             tags=["Categories"])
+@router.delete("/", response_model=CategorySchema)
 async def delete_category(category_id: int, 
                           service: ServiceDependency,
                           user: UserDependency,
@@ -82,9 +82,9 @@ async def delete_category(category_id: int,
     if not service.check_category_id(user.id, category_id):
         raise HTTPException(status_code=403, detail="Неправомерное удаление данных")
     
-    category = service.remove_category(category_id)
-
-    if category is None:
-        raise HTTPException(status_code=404, detail="Не удалось удалить категорию - такой категории нет/уже удалена")
+    try:
+        category = service.remove_category(category_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Запрашиваемый на удаление пользователь не найден/уже удален")
     
-    return {"message": f"Категория '{category.name}' была удалена"}
+    return category

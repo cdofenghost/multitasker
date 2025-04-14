@@ -17,6 +17,7 @@ def startup():
     Base.metadata.create_all(bind=get_engine())
     
 app.mount("/static", StaticFiles(directory="C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/imgs"))
+app.mount("/attachments", StaticFiles(directory="C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/attachments"))
 
 app.include_router(user_routes.router)
 app.include_router(category_routes.router)
@@ -89,3 +90,7 @@ async def join_project(id: int):
 @app.get("/app/project/{id}/edit")
 async def join_project(id: int):
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/project-edit.html")
+
+@app.get("/app/task/{id}")
+async def join_project(id: int):
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/task.html")

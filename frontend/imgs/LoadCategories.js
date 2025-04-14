@@ -54,13 +54,13 @@ async function fetchAndDisplayCategories() {
       container.className = 'categories-container';
       
       // 4. Для каждой категории создаем HTML-элемент
-      for (key in categories["categories"]) {
-        category = categories["categories"][key];
+      for (key in categories) {
+        const category = categories[key];
         const categoryElement = document.createElement('div');
         const colorElement = document.createElement('div');
         var projectAmount;
 
-        console.log(category);
+        console.log(category, "what");
         try {
           const response = await fetch(`http://127.0.0.1:8000/category/count/projects?category_id=${category.id}`);
 
@@ -96,7 +96,7 @@ async function fetchAndDisplayCategories() {
         colorElement.style.width = "24px";
         colorElement.style.height = "48px";
         colorElement.style.display = "inline-block";
-        colorElement.style.borderRadius = "4px";
+        colorElement.style.borderRadius = "8px";
         
         // Добавляем название категории
         const nameElement = document.createElement('span');

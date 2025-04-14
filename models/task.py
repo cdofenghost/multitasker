@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, CheckConstraint
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, CheckConstraint
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -10,9 +10,13 @@ class Task(Base):
     author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     performer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"))
-    deadline = Column(Date)
+    deadline = Column(DateTime)
+    date_created = Column(DateTime)
+    date_updated = Column(DateTime)
     priority = Column(Integer)
+    status = Column(Integer)
     description = Column(String)
+    
     #attached_files = Column(Integer, ForeignKey("attaches.id"))
 
     # 1:M

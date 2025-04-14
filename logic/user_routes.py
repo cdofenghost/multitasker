@@ -13,7 +13,7 @@ from .restoring_codes import RestoringCodeCreateSchema, RestoringCodeUpdateSchem
 from .users import UserRepository, UserService, UserCredentialSchema, UserProfileUpdateSchema, UserSchema
 from .restoring_codes import RestoringCodeRepository, RestoringCodeService, RestoringCodeSchema
 from ..database import get_db
-from ..utils.sender import send_restoring_mail
+from ..utils.sender import send_restoring_mail, send_invitation_mail
 
 from .tokens import generate_access_token, get_current_user, decode_token
 
@@ -88,9 +88,15 @@ async def get_user_by_id(user_id: int, service: ServiceDependency, user: UserSch
     return service.get_user(user_id)
 
 @router.get("/by-email", response_model=UserSchema)
-async def get_user_by_email(email: str, service: ServiceDependency, user: UserSchema = Depends(get_current_user)):
-    return service.get_user_by_email(email)
-
+async def get_user_by_email(email: str, service: ServiceDependency, send_notification: bool = False, user: UserSchema = Depends(get_current_user)):
+    try:
+        user = service.get_user_by_email(email)
+        return user
+    except NoResultFound:
+        if send_notification:
+            send_invitation_mail(user, email)
+            raise HTTPException(status_code=200, detail="Пользователю было отправлено приглашение на регистрацию.")
+        raise HTTPException(status_code=404, detail="Пользователь с таким e-mail'ом не был найден.")
 
 @router.post("/verify-code")
 async def verify_restoring_code(email: str, 

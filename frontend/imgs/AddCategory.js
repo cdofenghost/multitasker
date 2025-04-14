@@ -12,8 +12,14 @@ async function addCategory() {
         },
         body: JSON.stringify({name: category_name, color: category_color}),
     });
+    
+    if (response.status == 422){
+        console.log({name: category_name, color: category_color});
+        console.error("Ашибка заполнения папробуй снова");
+        
+    }
+    else {
+        window.location.replace("http://127.0.0.1:8000/app/main");
+    }
 
-    console.log({name: category_name, color: category_color});
-
-    window.location.replace("http://127.0.0.1:8000/app/main");
 }

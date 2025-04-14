@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/other/styles.css">
     <link rel="icon" href="/static/Logo.png" type="image/x-icon">
+
+    <script src="https://kit.fontawesome.com/330a6c34ff.js" crossorigin="anonymous"></script>
     <title>MultiTasker</title>
     <style>
         body {
@@ -116,11 +118,17 @@
                         <div>
                             <input type="email" id="email" name="email" placeholder="Адрес электронной почты" required>
                         </div>
-                        <div>
-                            <input type="password" id="password" name="password" placeholder="Пароль" required>
+                        <div style="border: 1px solid #ccc; display: flex; border-radius: 10px; height: auto; margin-bottom: 16px; vertical-align: middle;">
+                            <input style="border: none; margin-bottom: 0px;" type="password" id="password" name="password" placeholder="Пароль" required>
+                            <i class="fas fa-eye" style="height: fit-content; margin: auto 0; margin-right: 12px; transform: scale(1.2, 1.2);" onclick="hideShowPassword('password')"></i>
                         </div>
-                        <div>
-                            <input type="password" id="repeat-password" name="repeat-password" placeholder="Повторите пароль" required>
+                        <div style="border: 1px solid #ccc; display: flex; border-radius: 10px; height: auto; margin-bottom: 16px; vertical-align: middle;">
+                            <input style="border: none; margin-bottom: 0px;" type="password" id="repeat-password" name="repeat-password" placeholder="Повторите пароль" required>
+                            <i class="fas fa-eye" style="height: fit-content; margin: auto 0; margin-right: 12px; transform: scale(1.2, 1.2);" onclick="hideShowPassword('repeat-password')"></i>
+                        </div>
+                        <div style="display: flex; margin-bottom: 12px;">
+                            <input style="border: none; border-radius: 4px; width: 48px; margin-right: 12px;" type="checkbox" id="TOS" name="TOS" required>
+                            <label for="TOS" style="text-align: left; font-weight: 400;">Я соглашаюсь с Политикой конфидециальности и Правилами использования приложения</label>
                         </div>
                         <button type="submit">Вход</button>
                         <div id="passwordError" class="password-error" style="display: none;">Пароль неверный</div>
@@ -187,6 +195,21 @@
                 }
             }
         });
+    </script>
+    <script>
+        function hideShowPassword(id)
+        {
+            const inputline = document.getElementById(id);
+
+            if (inputline.type == "password")
+            {
+                inputline.type = "text";
+            }
+            else 
+            {
+                inputline.type = "password";
+            }
+        }
     </script>
 </body>
 </html>

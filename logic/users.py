@@ -7,6 +7,7 @@ from passlib.hash import bcrypt
 from ..models.user import User
 from ..schemas.user import UserCredentialSchema, UserProfileUpdateSchema, UserProfileSchema, UserSchema
 from ..utils.utils import generate_name
+from ..utils.secret_data import DEFAULT_ICON_PATH
 from .exceptions import IncorrectPasswordError
 
 # + таблица ResetCodes
@@ -16,7 +17,7 @@ class UserRepository:
 
     def __to_new_user(self, user_data: UserCredentialSchema):
         hashed_password = bcrypt.hash(user_data.password)
-        return User(email=user_data.email, name=generate_name(), hashed_password=hashed_password, icon="/default-icon")
+        return User(email=user_data.email, name=generate_name(), hashed_password=hashed_password, icon=DEFAULT_ICON_PATH)
     
     # def __to_user(self, user_data: UserProfileSchema):
     #     user = User(id=user_data.id, name=user_data.name, email=user_data.email, icon=user_data.icon)
@@ -87,7 +88,7 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def register_user(self, user_data: UserCredentialSchema) -> UserSchema | None:
+    def register_user(self, user_data: UserCredentialSchema) -> UserSchema:
         validate_email(user_data.email, check_deliverability=True)
         
         return self.user_repository.add_user(user_data)

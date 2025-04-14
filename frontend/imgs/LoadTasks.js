@@ -102,7 +102,6 @@ async function fetchAndDisplayTasks() {
         taskElement.style.marginBottom = "12px";
         taskElement.style.textAlign = "left";
 
-        taskElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/project/${project.id}`);
         // Устанавливаем цвет фона из данных категории
         
         // Добавляем название категории
@@ -153,6 +152,8 @@ async function fetchAndDisplayTasks() {
         taskElement.appendChild(nameElement);
         taskElement.appendChild(secondRowElement);
         taskElement.appendChild(performerNameElement);
+
+        taskElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/task/${task.id}`);
         container.appendChild(taskElement);
 
         console.log(taskElement);

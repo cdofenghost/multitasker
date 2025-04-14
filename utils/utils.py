@@ -7,4 +7,4 @@ def generate_name() -> str:
         "Шахтёр", "Грузчик", "Врач", "Следователь", "Полицейский",
         "Маляр", "Биолог", "Физик", "Охранник", "Директор"]
     
-    return f"{names[randint(0, len(names))]}-{jobs[randint(0, len(jobs))]} {randint(0, 100)}"
+    return f"{names[randint(0, len(names)-1)]}-{jobs[randint(0, len(jobs)-1)]} {randint(0, 100)}"

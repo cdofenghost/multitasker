@@ -35,19 +35,36 @@
                         </div>
                         <text style="text-align: left; font-weight: 500; font-size: 16px; color: #A9A9A9;">ИСПОЛНИТЕЛЬ</text>
                         <div>
-                            <input id="task-performer-email" name="project-desc" placeholder="Введите описание проекта" required>
+                            <input id="task-performer-email" name="project-desc" placeholder="Введите почту пользователя" required>
                         </div>
                         <text style="text-align: left; font-weight: 500; font-size: 16px; color: #A9A9A9;">ОПИСАНИЕ ЗАДАЧИ</text>
                         <div>
-                            <input id="task-desc" name="project-icon" placeholder="Иконка" required>
+                            <input id="task-desc" name="project-icon" placeholder="Опишите ваш проект" required>
                         </div>
                         <text style="text-align: left; font-weight: 500; font-size: 16px; color: #A9A9A9;">СРОК ИСПОЛНЕНИЯ</text>
                         <div>
-                            <input id="task-date" name="project-icon" placeholder="Иконка" required>
+                            <input type="datetime-local" id="task-date" name="project-icon" required>
                         </div>
                         <text style="text-align: left; font-weight: 500; font-size: 16px; color: #A9A9A9;">ВАЖНОСТЬ ЗАДАЧИ</text>
                         <div>
-                            <input id="task-priority" name="project-icon" placeholder="Иконка" required>
+                            <select name="cars" id="task-priority">
+                                <div style="display: flex;">
+                                    <img src="/static/1p.png">
+                                    <option value="1">Несрочно</option>
+                                </div>
+                                <div style="display: flex;">
+                                    <img src="/static/2p.png">
+                                    <option value="2">Может подождать</option>
+                                </div>
+                                <div style="display: flex;">
+                                    <img src="/static/3p.png">
+                                    <option value="3">Срочно</option>
+                                </div>
+                                <div style="display: flex;">
+                                    <img src="/static/4p.png">
+                                    <option value="4">Очень срочно</option>
+                                </div>
+                              </select>
                         </div>
                     </form>
                 </div>

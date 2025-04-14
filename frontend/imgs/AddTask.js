@@ -8,13 +8,18 @@ async function addTask() {
     const project_date = document.getElementById("task-date").value;
     const project_priority = document.getElementById("task-priority").value;
 
-    const response_performer = await fetch(`http://127.0.0.1:8000/users/by-email?email=${project_performer_email}`);
+    const response_performer = await fetch(`http://127.0.0.1:8000/users/by-email?email=${project_performer_email}&send_notification=True`);
     const performer = await response_performer.json();
+    var perfId = Number(performer.id);
 
+    if (isNaN(perfId))
+    {
+        perfId = -1;
+    }
     const href = window.location.href.split('/')
     const id = href[href.length - 2]
     const rbody = {
-        performer_id: Number(performer.id),
+        performer_id: perfId,
         name: project_name, 
         description: project_desc, 
         deadline: project_date,

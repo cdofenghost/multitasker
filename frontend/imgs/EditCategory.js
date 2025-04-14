@@ -19,9 +19,18 @@ async function addCategory() {
         body: JSON.stringify({name: category_name, color: category_color}),
     });
 
-    console.log({name: category_name, color: category_color});
+    if (!response.ok)
+    {
+        console.error("Ашибка заполнения папробуй снвоа");
+        return;
+    }
 
-    window.location.replace("http://127.0.0.1:8000/app/main");
+    else {
+        console.log({name: category_name, color: category_color});
+
+        window.location.replace("http://127.0.0.1:8000/app/main");
+    }
+
 }
 
 async function deleteCategory() {

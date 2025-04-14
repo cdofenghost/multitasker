@@ -13,7 +13,7 @@ from ..database import get_db
 from .tokens import get_current_user
 
 MAX_FILE_SIZE = 10*1024*1024
-router = APIRouter(prefix="/attachment", tags=["Attachment"])
+router = APIRouter(prefix="/attachment", tags=["Attachments"])
 
 def get_attachment_repository(db: Session = Depends(get_db)):
     return AttachmentRepository(db)

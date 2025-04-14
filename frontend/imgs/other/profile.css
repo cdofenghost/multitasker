@@ -67,6 +67,11 @@ body {
     transition: ease-out background-color 0.3s;
 }
 
+.black-button:hover {
+    background-color: rgb(71, 71, 71);
+    transition: ease-out background-color 0.3s;
+}
+
 .white-button {
     width: 100%;
     padding: 10px;
@@ -107,6 +112,7 @@ body {
     transition: ease-in-out background-color 0.1s;
     transition: ease-in-out color 0.1s;
 }
+
 .error-message {
     color: red;
     font-size: 14px;
@@ -122,3 +128,30 @@ body {
 .icon {
     color: black;
 }
+
+.icon-button i:hover {
+    color: #606060;
+    transition: ease-in color 0.1s;
+}
+
+.icon-button i{
+    color: black;
+    width: 100%;
+    height: 100%;
+    transition: ease-out color 0.1s;
+}
+
+.overlay {
+    position: fixed; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: 414px; /* Full width (cover the whole page) */
+    height: 888px; /* Full height (cover the whole page) */
+    top: 0;
+    left: 753px;
+    right: 0;
+    bottom: 0;
+        
+    background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+  }

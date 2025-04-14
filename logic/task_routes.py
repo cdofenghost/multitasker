@@ -44,6 +44,13 @@ async def add_task(project_id: int,
             "project_id": task.project_id,
             "priority": task.priority,}
 
+@router.get("/")
+async def get_task(task_id: int,
+                   service: ServiceDependency,
+                   user: UserDependency):
+    return service.get_task(user.id, task_id)
+
+
 @router.get("/all")
 async def get_project_tasks(project_id: int,
                             service: ServiceDependency,

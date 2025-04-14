@@ -24,12 +24,34 @@
     
         </header>
         <main style="background-color: white; display: flexbox; height: 90%; padding: 12px;">
+            <div class="overlay" id="overlay" onclick="off()">
+                <div style="background-color: white; width: 90%; height: 50%; margin: auto auto;">
+
+                </div>
+            </div>              
             <div class="main-container">
                 <div id="profile-container">
-                    <img id="user-icon" src="/static/flight.gif" style="width: 128px; height: 128px; border-radius: 50%;">
-                    <h2 id="user-name">Имя пользователя</h2>
-                    <text id="user-email">user@example.com</text>
-                    <button class="black-button" style="height: 56px; margin-top: 12px;">Сменить пароль</button>
+                    <div style="display: flex; justify-content: center; align-items: baseline;">
+                        <img id="user-icon" src="/attachments/default-icon.jpg" style="width: 128px; height: 128px; border-radius: 50%;">
+                        <div class="icon-button" onclick="">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; align-items: center;">
+                        <h2 id="user-name" contenteditable="true" style="margin-right: 12px;">Имя пользователя</h2>
+                        <div class="icon-button" onclick="">
+                            <i class="fas fa-pen" style="transform: scale(0.8, 0.8);"></i>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; align-items: center;">
+                        <text id="user-email" style="margin-right: 12px;">user@example.com</text>
+                        <div class="icon-button" onclick="">
+                            <i class="fas fa-pen" style="transform: scale(0.8, 0.8);"></i>
+                        </div>
+                    </div>
+                    <button class="black-button" style="height: 56px; margin-top: 12px;" onclick="on()">Сменить пароль</button>
                     <button class="exit-button" type="toProfile" onclick="logout(window.location.href)" style="height: 56px; margin-top: 12px;">Выйти из приложения</button>
                 </div>
             </div>
@@ -61,5 +83,6 @@
     </div>
     <script src="/static/redirections.js"></script>
     <script src="/static/LoadUser.js"></script>
+    <script src="/static/Profile.js"></script>
 </body>
 </html>
