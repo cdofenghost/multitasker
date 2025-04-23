@@ -15,7 +15,7 @@ from .restoring_codes import RestoringCodeRepository, RestoringCodeService, Rest
 from ..database import get_db
 from ..utils.sender import send_restoring_mail, send_invitation_mail
 
-from .tokens import generate_access_token, get_current_user, decode_token
+from .tokens import generate_access_token, get_current_user, decode_token, TokenResponse
 
 router = APIRouter(prefix="/users",
                    tags=["User"])
@@ -42,10 +42,9 @@ UserDependency = Annotated[dict, Depends(get_current_user)]
 CodeServiceDependency = Annotated[RestoringCodeService, Depends(get_code_service)]
 
 
-@router.post("/register")
+@router.post("/register", response_model=UserSchema, status_code=201)
 async def register(user_data: UserCredentialSchema, 
-                   service: ServiceDependency):
-    
+                   service: ServiceDependency,):
     try:
         existing_user = service.get_user_by_email(email=user_data.email)
         raise HTTPException(status_code=400, detail="Пользователь с таким email уже зарегистирован! Попробуйте авторизоваться.")
@@ -57,10 +56,10 @@ async def register(user_data: UserCredentialSchema,
         except EmailUndeliverableError as e:
             raise HTTPException(status_code=418, detail=e.args[0])
 
-        return {"id": user.id, "name": user.name, "email": user.email}
+    return user
 
 
-@router.post("/authorize", response_model=dict)
+@router.post("/authorize", response_model=TokenResponse)
 async def authorize(form_data: UserCredentialSchema, #OAuth2PasswordRequestForm
                     service: ServiceDependency,
                     response: Response):
@@ -80,7 +79,7 @@ async def authorize(form_data: UserCredentialSchema, #OAuth2PasswordRequestForm
 
 
 @router.get("/get", response_model=UserSchema)
-async def get_user(user: UserSchema = Depends(get_current_user)):
+async def get_user(user: UserDependency):
     return user
 
 @router.get("/", response_model=UserSchema)
@@ -98,7 +97,7 @@ async def get_user_by_email(email: str, service: ServiceDependency, send_notific
             raise HTTPException(status_code=200, detail="Пользователю было отправлено приглашение на регистрацию.")
         raise HTTPException(status_code=404, detail="Пользователь с таким e-mail'ом не был найден.")
 
-@router.post("/verify-code")
+@router.post("/verify-code", response_model=TokenResponse)
 async def verify_restoring_code(email: str, 
                                 input_code: int, 
                                 code_service: CodeServiceDependency,
@@ -126,7 +125,7 @@ async def verify_restoring_code(email: str,
 
 
 # Токен
-@router.put("/change-password", response_model=dict)
+@router.put("/change-password", response_model=UserSchema)
 async def change_password(service: ServiceDependency,
                           code_service: CodeServiceDependency,
                           token: str,
@@ -139,20 +138,15 @@ async def change_password(service: ServiceDependency,
         print("Неверный токен")
         raise HTTPException(status_code=401, detail="Неверный токен")
     
-    user = service.get_user(user_id)
+    try:
+        existing_user = service.get_user(user_id)
 
-    if user is None:
-        print("Пользователь не найден")
-        raise HTTPException(status_code=404, detail="Пользователь не найден")
-    
-    existing_user = service.get_user(user_id)
-
-    if existing_user is None:
+    except NoResultFound:
         raise HTTPException(status_code=404, detail="Возникла ошибка: пользователь не найден")
     
-    service.update_user_credentials(user_id, UserCredentialSchema(email=existing_user.email, password=new_password))
+    user = service.update_user_credentials(user_id, UserCredentialSchema(email=existing_user.email, password=new_password))
 
-    return {"message": f"Пароль сменен на {new_password}"}
+    return user
 
 
 @router.post("/send-restoring-mail", response_model=RestoringCodeSchema)
@@ -174,3 +168,42 @@ async def send_restore_mail(email: str,
         result = code_service.add_code(RestoringCodeCreateSchema(user_email=email, code=code))
 
     return result
+
+@router.delete('/', status_code=204)
+async def remove_user(user_id: int,
+                      service: ServiceDependency,
+                      user: UserDependency):
+    if user.role == 'superuser':
+        try:
+            service.remove_user(user_id)
+        except NoResultFound:
+            raise HTTPException(status_code=404, detail="Пользователь с таким ID не был найден.")
+    
+    else:
+        raise HTTPException(status_code=403, detail="Вы имеете недостаточно прав, чтобы удалять пользователей.")
+    
+@router.put('/to-superuser')
+async def change_user_role_to_superuser(user_id: int,
+                      service: ServiceDependency,
+                      user: UserDependency):
+    if user.role == 'superuser':
+        try:
+            service.change_user_role(user_id, 'superuser')
+        except NoResultFound:
+            raise HTTPException(status_code=404, detail="Пользователь с таким ID не был найден.")
+    
+    else:
+        raise HTTPException(status_code=403, detail="Вы имеете недостаточно прав, чтобы удалять пользователей.")
+    
+@router.put('/to-user')
+async def change_user_role_to_user(user_id: int,
+                      service: ServiceDependency,
+                      user: UserDependency):
+    if user.role == 'superuser':
+        try:
+            service.change_user_role(user_id, 'user')
+        except NoResultFound:
+            raise HTTPException(status_code=404, detail="Пользователь с таким ID не был найден.")
+    
+    else:
+        raise HTTPException(status_code=403, detail="Вы имеете недостаточно прав, чтобы удалять пользователей.")

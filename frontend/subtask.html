@@ -21,7 +21,7 @@
                 <button class="icon-button" onclick="toHome(window.location.href)">
                     <i class="fas fa-arrow-left" style="align-content: center; transform: scale(1.5, 1.5);"></i>
                 </button>
-                <h2 style="display: inline-block; align-content: left; font-weight: 500;">Задача</h2>
+                <h2 style="display: inline-block; align-content: left; font-weight: 500;">Подзадача</h2>
                 <div style="width: 100%; text-align: right;">
                     <button id="add-button" class="icon-button">
                         <i class="fas fa-plus" style="align-content: center;"></i>
@@ -50,14 +50,6 @@
                         </div>
                         <div id="task-deadline"></div>
                     </div>
-                    <div>
-                        <div style="text-align: left; font-weight: 500; font-size: 16px; color: #A9A9A9;">
-                            ПОДЗАДАЧИ
-                        </div>
-                        <div id="subtask-container" style="margin-bottom: 24px;">
-
-                        </div>
-                    </div>
                     <div style="margin-bottom: 24px;">
                         <div style="text-align: left; font-weight: 500; font-size: 16px; color: #A9A9A9;">
                             ИСПОЛНИТЕЛЬ
@@ -82,7 +74,7 @@
                     </div>
                 </div>
                 <button class="add-button" style="margin-bottom: 12px;">Редактировать данные</button>
-                <button class="delete-button">Удалить задачу</button>
+                <button class="delete-button">Удалить подзадачу</button>
             </div>
         </main>
         <footer style="background-color: white;">
@@ -111,6 +103,6 @@
         </footer>
     </div>
     <script src="/static/redirections.js"></script>
-    <script src="/static/GetTask.js"></script>
+    <script src="/static/GetSubtask.js"></script>
 </body>
 </html>

@@ -16,8 +16,9 @@ async function fetchAndDisplayCategories() {
         
         const user = await response.json()
 
-        userNameElement.innerText = user["name"]
-        userEmailElement.innerText = user["email"]
+        userNameElement.innerText = user["name"];
+        userEmailElement.innerText = user["email"];
+        userIconElement.src = `/attachments/${user["id"]}/${user['icon']}`;
         
         } catch (error) {
         console.error('Ошибка при загрузке категорий:', error);
@@ -26,7 +27,6 @@ async function fetchAndDisplayCategories() {
     
 async function logout() {
     try {
-        // 1. Делаем GET-запрос к API
             const response = await fetch('http://127.0.0.1:8000/profile/logout/', {
                 method: "POST",
                 headers: {
@@ -35,7 +35,6 @@ async function logout() {
                 body: JSON.stringify(),
             });
         
-            // Проверяем, что запрос успешен
             if (!response.ok) {
                 throw new Error(`Ошибка HTTP: ${response.status}`);
             }
@@ -44,7 +43,6 @@ async function logout() {
             
             } catch (error) {
             console.error('Ошибка при загрузке категорий:', error);
-            // // Можно добавить уведомление об ошибке на страницу
             // const errorElement = document.createElement('div');
             // errorElement.className = 'error';
             // errorElement.textContent = 'Не удалось загрузить категории';

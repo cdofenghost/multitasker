@@ -34,21 +34,21 @@
                     <div style="display: flex; justify-content: center; align-items: baseline;">
                         <img id="user-icon" src="/attachments/default-icon.jpg" style="width: 128px; height: 128px; border-radius: 50%;">
                         <div class="icon-button" onclick="">
-                            <i class="fas fa-pen"></i>
+                            <i id="change-icon-button" class="fas fa-pen"></i>
                         </div>
                     </div>
 
                     <div style="display: flex; justify-content: center; align-items: center;">
-                        <h2 id="user-name" contenteditable="true" style="margin-right: 12px;">Имя пользователя</h2>
+                        <h2 id="user-name" contenteditable="false" style="margin-right: 12px;">Имя пользователя</h2>
                         <div class="icon-button" onclick="">
-                            <i class="fas fa-pen" style="transform: scale(0.8, 0.8);"></i>
+                            <i id="change-name-button" class="fas fa-pen" style="transform: scale(0.8, 0.8);"></i>
                         </div>
                     </div>
 
                     <div style="display: flex; justify-content: center; align-items: center;">
                         <text id="user-email" style="margin-right: 12px;">user@example.com</text>
                         <div class="icon-button" onclick="">
-                            <i class="fas fa-pen" style="transform: scale(0.8, 0.8);"></i>
+                            <i id="change-email-button" class="fas fa-pen" style="transform: scale(0.8, 0.8);"></i>
                         </div>
                     </div>
                     <button class="black-button" style="height: 56px; margin-top: 12px;" onclick="on()">Сменить пароль</button>

@@ -6,6 +6,7 @@ class UserSchema(BaseModel):
     email: EmailStr = Field(pattern="^[a-zA-Z0-9-_.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
     hashed_password: str = Field()
     name: str = Field(pattern="[А-Яа-яA-Za-z0-9]+", min_length=2, max_length=50)
+    role: str = Field(default="user")
     icon: str = Field(default=DEFAULT_ICON_PATH)
 
 class UserProfileSchema(BaseModel):

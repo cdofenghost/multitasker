@@ -1,9 +1,38 @@
-var username = document.getElementById('user-name');
-var email = document.getElementById('email');
+const username = document.getElementById('user-name');
+const email = document.getElementById('user-email');
+const icon = document.getElementById('user-icon');
 
-// username.addEventListener('keypress', function(event) {
-//     if (event.key == )
-// });
+
+var nameButton = document.getElementById('change-name-button');
+var emailButton = document.getElementById('change-email-button');
+var iconButton = document.getElementById('change-icon-button');
+
+nameButton.addEventListener('click',async () => {
+    if (username.isContentEditable)
+    {
+        username.contentEditable = false;
+        changeData();
+    }
+
+    else {
+        username.contentEditable = true;
+    }
+});
+
+async function changeData() {
+    console.log(email);
+    const response = await fetch(`http://127.0.0.1:8000/profile/update`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            email: email.innerText,
+            name: username.textContent,
+            icon: icon.src,
+        }),
+    });
+}
 
 async function changePassword() {
     const password = document.getElementById("new-password").value;

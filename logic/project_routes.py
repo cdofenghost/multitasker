@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 from typing import Annotated
 
 from .users import UserSchema
 from .projects import ProjectRepository, ProjectService
 from ..database import get_db
-from ..schemas.project import ProjectCreateSchema, ProjectUpdateSchema
+from ..schemas.project import ProjectCreateSchema, ProjectUpdateSchema, ProjectSchema
 
 from .tokens import get_current_user
 
@@ -25,45 +26,45 @@ def get_project_service(project_repository: ProjectRepository = Depends(get_proj
 ServiceDependency = Annotated[ProjectService, Depends(get_project_service)]
 UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
-@router.post("/{category_id}")
+@router.post("/{category_id}", response_model=ProjectSchema, status_code=201)
 async def add_project(category_id: int, 
                       project_data: ProjectCreateSchema, 
                       service: ServiceDependency,
                       user: UserDependency):
-    project = service.add_project(user.id, category_id, project_data)
+    try:
+        project = service.add_project(user.id, category_id, project_data)
 
-    if project is None:
+    except PermissionError:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на добавление проекта.")
     
-    return {"category_id": project.category_id, 
-            "name": project.name,
-            "description": project.description,
-            "icon": project.icon,}
+    return project
 
 
-@router.get("/all/{category_id}")
+@router.get("/all/{category_id}", response_model=list[ProjectSchema])
 async def get_category_projects(category_id: int,
                                 service: ServiceDependency,
                                 user: UserDependency):
-    projects = service.get_projects_by_category_id(user.id, category_id)
+    try:
+        projects = service.get_projects_by_category_id(user.id, category_id)
 
-    if projects is None:
+    except PermissionError:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение проектов.")
 
     return projects
 
-@router.get("/")
+@router.get("/", response_model=ProjectSchema)
 async def get_project(project_id: int,
                       service: ServiceDependency,
                       user: UserDependency):
-    projects = service.get_project(user.id, project_id)
+    try:
+        projects = service.get_project(user.id, project_id)
 
-    if projects is None:
-        raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение проекта.")
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Проекта с таким ID не было найдено.")
 
     return projects
 
-@router.get("/count-tasks")
+@router.get("/count-tasks", response_model=int)
 async def get_tasks_count(project_id: int,
                           service: ServiceDependency,
                           user: UserDependency):
@@ -74,34 +75,35 @@ async def get_tasks_count(project_id: int,
 
     return projects
 
-@router.put("/")
+@router.put("/", response_model=ProjectSchema)
 async def update_project(project_id: int, 
                          project_data: ProjectUpdateSchema, 
                          service: ServiceDependency,
                          user: UserDependency):
     
-    project = service.update_project(user.id, project_id, project_data)
+    try:
+        project = service.update_project(user.id, project_id, project_data)
 
-    if project is None:
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Проекта с таким ID не было найдено.")
+    
+    except PermissionError:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на обновление проекта.")
     
-    return {"category_id": project.category_id, 
-            "name": project.name,
-            "description": project.description,
-            "icon": project.icon,}
+    return project
 
 
-@router.delete("/")
+@router.delete("/", status_code=204)
 async def delete_project(project_id: int, 
                          service: ServiceDependency,
                          user: UserDependency):
     
-    project = service.remove_project(user.id, project_id)
+    try:
+        project = service.remove_project(user.id, project_id)
 
-    if project is None:
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Проекта с таким ID не было найдено.")
+    
+    except PermissionError:
         raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на добавление проекта.")
     
-    return {"category_id": project.category_id, 
-            "name": project.name,
-            "description": project.description,
-            "icon": project.icon,}

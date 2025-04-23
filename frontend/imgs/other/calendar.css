@@ -1,0 +1,77 @@
+body {
+    width: 414px; 
+    height: 832px; 
+    max-height: 896px;
+    max-width: 414px;
+    text-align: center; 
+    margin: auto; 
+    align-content: center;
+    background-color: #E5E5E5;
+    font-family: Ubuntu, sans-serif;
+
+    justify-content: center;
+    align-items: center;
+}
+  
+  .calendar-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px;
+    background: #000000;
+    color: white;
+  }
+  
+  .calendar-header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    padding: 10px 0;
+    background: #e0e0e0;
+    font-weight: bold;
+  }
+  
+  .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 10px;
+  }
+  
+  .days div {
+    height: 40px;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .days div:hover {
+    background: #e0e0e0;
+  }
+  
+  .days .today {
+    background: #007AFF;
+    color: white;
+  }
+  
+  .days .other-month {
+    color: #aaa;
+  }

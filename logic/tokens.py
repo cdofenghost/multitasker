@@ -7,10 +7,15 @@ import uuid
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from ..schemas.user import UserSchema
+from ..schemas.user import UserSchema, BaseModel
 from ..models.user import User
 from ..database import get_db
 from ..utils.secret_data import TOKEN_ALGORITHM, SECRET_TOKEN_KEY
+from ..models.revoked_token import RevokedToken
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/authorize")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -33,6 +38,9 @@ async def get_current_user(request: Request,
         user_id: int = payload_header.get("user_id")
         # user_id: 
     
+        if not db.query(RevokedToken).filter(RevokedToken.token == cookie_token).first() is None:
+            raise HTTPException(status_code=403, detail="Токен, который вы используете, больше не активен.")
+        
         if user_id is None:
             print("Неверный токен")
             raise HTTPException(status_code=401, detail="Неверный токен")
@@ -54,10 +62,12 @@ async def get_current_user(request: Request,
 
 def decode_token(token: str):
     return jwt.decode(token, SECRET_TOKEN_KEY, algorithms=[TOKEN_ALGORITHM])
-# def revoke_refresh_token(refresh_token: str, db: Session):
-#     revoked_token = RevokedToken(token=refresh_token, revoked_at=datetime.datetime.utcnow())
 
-#     db.add(revoked_token)
-#     db.commit()
+async def revoke_refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+    revoked_token = RevokedToken(token=refresh_token, revoked_at=datetime.datetime.now())
+
+    db.add(revoked_token)
+    db.commit()
     
-#     return {"message": "Токен отозван"}
+    return {"message": "Токен отозван"}
+

@@ -84,13 +84,25 @@ async def join_project(id: int):
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/project.html")
 
 @app.get("/app/project/{id}/add-task")
-async def join_project(id: int):
+async def task_create(id: int):
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/task-create.html")
 
 @app.get("/app/project/{id}/edit")
-async def join_project(id: int):
+async def project_edit(id: int):
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/project-edit.html")
 
 @app.get("/app/task/{id}")
-async def join_project(id: int):
+async def task_view(id: int):
     return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/task.html")
+
+@app.get("/app/task/{id}/add-subtask")
+async def subtask_create(id: int):
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/subtask-create.html")
+
+@app.get("/app/calendar")
+async def calendar():
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/calendar.html")
+
+@app.get("/app/subtask/{id}")
+async def calendar():
+    return FileResponse("C:/Users/Konstantin Denisov/AppData/Local/Programs/Python/Python311/web/testapp/frontend/subtask.html")

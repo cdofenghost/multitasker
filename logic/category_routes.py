@@ -24,7 +24,7 @@ def get_category_service(user_repository: CategoryRepository = Depends(get_categ
 ServiceDependency = Annotated[CategoryService, Depends(get_category_service)]
 UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
-@router.post("/", response_model=CategorySchema)
+@router.post("/", response_model=CategorySchema, status_code=201)
 async def add_category(category_data: CategoryCreateSchema, 
                        service: ServiceDependency,
                        user: UserDependency):
@@ -38,9 +38,10 @@ async def update_category(category_id: int,
                           category_data: CategoryUpdateSchema, 
                           service: ServiceDependency,
                           user: UserDependency):
-    category = service.update_category(category_id, category_data)
+    try:
+        category = service.update_category(category_id, category_data)
 
-    if category is None:
+    except NoResultFound:
         raise HTTPException(status_code=404, detail="Не удалось обновить категорию - такой категории нет/уже удалена")
 
     return category
@@ -58,23 +59,23 @@ async def get_all_user_categories(service: ServiceDependency,
 async def get_category(category_id: int,
                        service: ServiceDependency,
                        user: UserDependency):
-    category = service.get_category(category_id)
+    try:
+        category = service.get_category(category_id)
 
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Категория с таким ID не была найдена")
+    
     return category
+
 
 @router.get("/count/projects", response_model=int)
 async def get_projects_count(category_id: int,
                           service: ServiceDependency,
                           user: UserDependency):
-    amount = service.get_projects_count(category_id)
-
-    if amount is None:
-        raise HTTPException(status_code=403, detail="Запрещено. Неправомерный запрос на получение проекта.")
-
-    return amount
+    return service.get_projects_count(category_id)
 
 
-@router.delete("/", response_model=CategorySchema)
+@router.delete("/", status_code=204)
 async def delete_category(category_id: int, 
                           service: ServiceDependency,
                           user: UserDependency,
@@ -86,5 +87,3 @@ async def delete_category(category_id: int,
         category = service.remove_category(category_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Запрашиваемый на удаление пользователь не найден/уже удален")
-    
-    return category

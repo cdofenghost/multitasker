@@ -55,7 +55,7 @@ class ProjectRepository:
         project.name = project_schema.name
         project.description = project_schema.description
 
-        self.db.merge(project)
+        self.db.merge(self.__to_project(project))
         self.db.commit()
 
         return ProjectSchema(id=project.id, name=project.name, description=project.description, icon=project.icon, category_id=project.category_id)

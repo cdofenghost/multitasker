@@ -1,7 +1,10 @@
 from fastapi import UploadFile, APIRouter
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import FileResponse
+
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 from os.path import exists
 from os import mkdir
 
@@ -24,12 +27,12 @@ def get_attachment_service(user_repository: AttachmentRepository = Depends(get_a
 ServiceDependency = Annotated[AttachmentService, Depends(get_attachment_service)]
 UserDependency = Annotated[UserSchema, Depends(get_current_user)]
 
-@router.get("/", response_model=AttachmentSchema)
+@router.get("/attachments", response_model=AttachmentSchema)
 def get_user_attachments(service: ServiceDependency,
                          user: UserDependency):
     return service.get_user_attachments(user.id)
 
-@router.post("/", response_model=AttachmentSchema)
+@router.post("/", response_model=AttachmentSchema, status_code=201)
 def add_attachment(file: UploadFile,
                    service: ServiceDependency,
                    user: UserDependency):
@@ -37,19 +40,31 @@ def add_attachment(file: UploadFile,
     if file.size > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Размер файла превышает 10МБ")
     
-    path = f"testapp/attachments/{user.id}"
-    if (not exists(path)):
-        mkdir(path)
+    relative_path = f"attachments/{user.id}"
+    local_path = f"testapp/{relative_path}"
+    if (not exists(local_path)):
+        mkdir(local_path)
     
-    with open(path + f"/{file.filename}", "wb+") as save_file:
+    with open(local_path + f"/{file.filename}", "wb+") as save_file:
         save_file.write(file.file.read())
 
-    attachment = AttachmentCreateSchema(user_id=user.id, path=path)
+    attachment = AttachmentCreateSchema(user_id=user.id, path=f"{relative_path}/{file.filename}")
 
     return service.add_attachment(attachment)
 
-@router.delete("/", response_model=AttachmentSchema)
+@router.get("/", response_class=FileResponse)
+def get_attachment(attachment_id: int,
+                   service: ServiceDependency,
+                   user: UserDependency):
+    attachment = service.get_attachment(attachment_id)
+
+    return FileResponse(path=f"testapp/{attachment.path}", media_type='application/octet-stream')
+
+@router.delete("/", status_code=204)
 def delete_attachment(attachment_id: int,
                       service: ServiceDependency,
                       user: UserDependency):
-    return service.remove_attachment(attachment_id)
+    try:
+        service.remove_attachment(attachment_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Файл с таким ID не найден.")

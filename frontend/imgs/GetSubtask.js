@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 });
 
 const href = window.location.href.split('/');
-const taskId = href[href.length-1];
+const subtaskId = href[href.length-1];
 const addButton = document.getElementById('add-button');
 addButton.addEventListener('click', () => { window.location.replace(`http://127.0.0.1:8000/app/task/${taskId}/add-subtask`)});
 
@@ -38,7 +38,7 @@ async function loadTask() {
     const href = window.location.href.split('/');
     const taskId = href[href.length-1];
 
-    const response = await fetch(`http://127.0.0.1:8000/task?task_id=${taskId}`);
+    const response = await fetch(`http://127.0.0.1:8000/subtask?subtask_id=${subtaskId}`);
 
     var task = await response.json()
     var category = await getCategory(task);
@@ -83,88 +83,6 @@ async function loadTask() {
         taskDateUpdatedElement.innerText = "Обновлено " + formatDate(task.date_updated);
         taskStatBarElement.appendChild(categoryContainer);
         taskStatBarElement.appendChild(priorityContainer);
-
-        const task_container = document.getElementById("subtask-container");
-
-        const response2 = await fetch(`http://127.0.0.1:8000/subtask/all?task_id=${Number(taskId)}`);
-        const subtasks = await response2.json();
-
-        const container = document.createElement('div');
-        console.log(subtasks);
-        container.className = 'subtasks';
-        container.style.padding = "12px";
-
-        // 4. Для каждой категории создаем HTML-элемент
-        for (const subtask of subtasks) {
-        const taskElement = document.createElement('div');
-
-        taskElement.className = 'task';
-        taskElement.id = subtask.id;
-        taskElement.style.padding = "12px";
-        taskElement.style.backgroundColor = "#F5F5F5";
-        taskElement.style.borderRadius = "10px";
-        taskElement.style.marginBottom = "12px";
-        taskElement.style.textAlign = "left";
-
-        // Устанавливаем цвет фона из данных категории
-        
-        // Добавляем название категории
-        const nameElement = document.createElement('span');
-        nameElement.textContent = subtask.name;
-        nameElement.className = 'task-name';
-        nameElement.style.fontFamily = "Ubuntu";
-        nameElement.style.fontWeight = "500";
-        nameElement.style.fontSize = "20px";
-        nameElement.style.width = "100%";
-        nameElement.style.textAlign = "left";
-
-        const categoryNameElement = document.createElement('div');
-        const priorityElement = document.createElement('img');
-        const priorityContainerElement = document.createElement('div');
-        const secondRowElement = document.createElement('div');
-
-        secondRowElement.style.textAlign = "left";
-        secondRowElement.style.display = "flex";
-        secondRowElement.style.verticalAlign = "top";
-        secondRowElement.style.marginTop = "12px";
-
-        categoryNameElement.innerText = category.name;
-        categoryNameElement.style.backgroundColor = category.color;
-        categoryNameElement.style.borderRadius = "10px";
-
-        if (findColorWithMaxBrightness(category.color) < 150) { categoryNameElement.style.color = "white"; }
-
-        categoryNameElement.style.borderRadius = "10px";
-        categoryNameElement.style.padding = "6px";
-        categoryNameElement.style.width = "max-content";
-
-        priorityElement.src = `/static/${subtask.priority}p.png`;
-        priorityContainerElement.appendChild(priorityElement);
-        priorityContainerElement.style.alignContent = "center";
-        priorityContainerElement.style.height = "max-content";
-
-        secondRowElement.appendChild(categoryNameElement);
-        secondRowElement.appendChild(priorityContainerElement);
-
-        const performer = await getPerformer(subtask.performer_id);
-        const performerNameElement = document.createElement('div');
-        
-        performerNameElement.style.marginTop = "6px";
-        performerNameElement.style.fontSize = "14px";
-        performerNameElement.innerText = performer.name;
-
-        taskElement.appendChild(nameElement);
-        taskElement.appendChild(secondRowElement);
-        taskElement.appendChild(performerNameElement);
-
-        taskElement.onclick = () => window.location.replace(`http://127.0.0.1:8000/app/subtask/${subtask.id}`);
-        container.appendChild(taskElement);
-
-        console.log(taskElement);
-        };
-        
-        // 5. Добавляем контейнер на страницу
-        task_container.appendChild(container);
     } 
     else
     {
@@ -174,7 +92,11 @@ async function loadTask() {
 }
 
 async function getCategory(task) {
-    const response = await fetch(`http://127.0.0.1:8000/project?project_id=${task.project_id}`);
+    const response2 = await fetch(`http://127.0.0.1:8000/subtask?subtask_id=${subtaskId}`);
+
+    const taski = await response2.json();
+
+    const response = await fetch(`http://127.0.0.1:8000/project?project_id=${taski.task_id}`);
     
     var project = await response.json();
 

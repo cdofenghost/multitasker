@@ -33,7 +33,7 @@ class UserRepository:
 
         return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
 
-    def find_user(self, id: int) -> UserSchema | None:
+    def find_user(self, id: int) -> UserSchema:
         user = self.db.query(User).filter(User.id == id).first()
 
         if user is None:
@@ -41,7 +41,7 @@ class UserRepository:
             
         return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
     
-    def find_user_by_email(self, email: str) -> UserSchema | None:
+    def find_user_by_email(self, email: str) -> UserSchema:
         user = self.db.query(User).filter(User.email == email).first()
 
         if user is None:
@@ -55,7 +55,7 @@ class UserRepository:
         return [UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
                 for user in users]
     
-    def remove_user(self, id: int) -> UserSchema | None:
+    def remove_user(self, id: int) -> UserSchema:
         user = self.db.query(User).filter(User.id == id).first()
 
         if user is None:
@@ -74,7 +74,6 @@ class UserRepository:
 
         if type(user_schema) is UserProfileUpdateSchema:
             user.email = user_schema.email
-            user.hashed_password = bcrypt.hash(user_schema.password)
             user.name = user_schema.name
             user.icon = user_schema.icon
 
@@ -82,6 +81,16 @@ class UserRepository:
         self.db.commit()
 
         return user
+    
+    def change_user_role(self, user_id: int, role: str):
+        user = self.find_user(user_id)
+
+        user.role = role
+
+        self.db.merge(user)
+        self.db.commit()
+
+        return UserSchema(id=user.id, name=user.name, email=user.email, hashed_password=user.hashed_password, icon=user.icon)
 
 
 class UserService:
@@ -117,6 +126,9 @@ class UserService:
         existing_user = self.user_repository.find_user(user_id)
 
         return self.user_repository.update_user(user_id=user_id, user_schema=user_data)
+
+    def change_user_role(self, user_id: int, user_role: str) -> UserSchema:
+        return self.user_repository.change_user_role(user_id, user_role)
 
 
 

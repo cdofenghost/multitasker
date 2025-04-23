@@ -1,50 +1,107 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
+from datetime import datetime
 
 from ..models.task import Task
 from ..models.project import Project
 from ..models.category import Category
 from ..models.subtask import Subtask
-from ..schemas.subtask import SubtaskCreateSchema, SubtaskUpdateSchema
+from ..schemas.subtask import SubtaskCreateSchema, SubtaskUpdateSchema, SubtaskSchema
 
 class SubtaskRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def add_subtask(self, task: Subtask) -> Subtask:
-        self.db.add(task)
+    def __to_subtask(self, task_id: int, user_id: int, schema: SubtaskCreateSchema) -> Subtask:
+        return Subtask(name=schema.name,
+                    description=schema.description,
+                    performer_id=schema.performer_id,
+                    author_id=user_id,
+                    task_id=task_id,
+                    deadline=schema.deadline,
+                    date_created=datetime.now(),
+                    date_updated=datetime.now(),
+                    status=1,
+                    priority=schema.priority)
+    
+    def __to_subtask_schema(self, task: Subtask) -> SubtaskSchema:
+        return SubtaskSchema(id=task.id,
+                            name=task.name,
+                            author_id=task.author_id,
+                            performer_id=task.performer_id,
+                            task_id=task.task_id,
+                            deadline=task.deadline,
+                            date_created=task.date_created,
+                            date_updated=task.date_updated,
+                            priority=task.priority,
+                            status=task.status,
+                            description=task.description)
+    
+    def add_subtask(self, task_id: int, user_id: int, subtask_schema: SubtaskCreateSchema) -> SubtaskSchema:
+        subtask = self.__to_subtask(task_id=task_id, user_id=user_id, schema=subtask_schema)
+
+        self.db.add(subtask)
         self.db.commit()
 
-        return task
+        return self.__to_subtask_schema(subtask)
 
-    def find_subtask(self, subtask_id: int) -> Subtask | None:
-        return self.db.query(Subtask).filter(Subtask.id == subtask_id).first()
-    
-    def get_tasks(self) -> list[Subtask]:
-        pass
-
-    def get_task_subtasks(self, task_id: int) -> list[Subtask]:
-        return list(self.db.query(Subtask).filter(Subtask.task_id == task_id))
-    
-    def get_allocated_subtasks(self, user_id: int) -> list[Task]:
-        subtasks = self.db.query(Task).filter(Task.performer_id == user_id)
-        return list(subtasks)
-    
-    def remove_subtask(self, id: int) -> Subtask | None:
-        subtask = self.find_subtask(id)
+    def find_subtask(self, subtask_id: int) -> SubtaskSchema:
+        subtask = self.db.query(Subtask).filter(Subtask.id == subtask_id).first()
 
         if subtask is None:
-            return None
+            raise NoResultFound()
+        
+        return self.__to_subtask_schema(subtask)
+    
+    def get_subtasks(self) -> list[SubtaskSchema]:
+        return [self.__to_subtask_schema(subtask)
+                for subtask in self.db.query(Subtask).all()]
+    
+    def get_allocated_subtasks(self, user_id: int) -> list[SubtaskSchema]:
+        return [self.__to_subtask_schema(subtask)
+                for subtask in self.db.query(Subtask).filter(Subtask.performer_id == user_id)]
+    
+    def get_authored_subtasks(self, user_id: int) -> list[SubtaskSchema]:
+        return [self.__to_subtask_schema(subtask)
+                for subtask in self.db.query(Subtask).filter(Subtask.author_id == user_id)]
+
+    def get_task_subtasks(self, task_id: int) -> list[SubtaskSchema]:
+        return [self.__to_subtask_schema(subtask) 
+                for subtask in self.db.query(Subtask).filter(Subtask.task_id == task_id)]
+    
+    def remove_subtask(self, id: int) -> SubtaskSchema:
+        subtask = self.find_subtask(id)
         
         self.db.query(Subtask).filter(subtask.id == id).delete()
         self.db.commit()
 
-        return subtask
+        return self.__to_subtask_schema(subtask)
     
-    def update_subtask(self, subtask: Subtask) -> Subtask:
-        self.db.merge(subtask)
+    def update_subtask(self, subtask_id: int, subtask_data: SubtaskUpdateSchema) -> SubtaskSchema:
+        subtask = self.find_subtask(subtask_id)
+
+        subtask.performer_id=subtask_data.performer_id
+        subtask.name=subtask_data.name
+        subtask.description=subtask_data.description
+        subtask.deadline=subtask_data.deadline
+        subtask.priority=subtask_data.priority
+        subtask.status=subtask_data.status
+        subtask.date_updated = datetime.now()
+
+        sub = Subtask(name=subtask.name,
+                    description=subtask.description,
+                    performer_id=subtask.performer_id,
+                    author_id=subtask.author_id,
+                    task_id=subtask.task_id,
+                    deadline=subtask.deadline,
+                    date_created=subtask.date_created,
+                    date_updated=datetime.now(),
+                    status=subtask.status,
+                    priority=subtask.priority)
+        self.db.merge(sub)
         self.db.commit()
 
-        return subtask
+        return self.__to_subtask_schema(sub)
 
     def check_subtask_ownership(self, user_id: int, task_id: int) -> bool:
         subtask_author = self.db.query(Task).filter(Task.id == task_id,
@@ -81,68 +138,40 @@ class SubtaskService:
     def __init__(self, subtask_repository: SubtaskRepository):
         self.subtask_repository = subtask_repository
 
-    def __to_subtask(self, task_id: int, task_data: SubtaskCreateSchema) -> Subtask:
-        return Subtask(name=task_data.name, 
-                    description=task_data.description,
-                    author_id=task_data.author_id,
-                    task_id=task_id,
-                    performer_id=task_data.performer_id,
-                    deadline=task_data.deadline,
-                    priority=task_data.priority,)
-
-    def add_subtask(self, user_id: int, task_id: int, subtask_data: SubtaskCreateSchema) -> Subtask | None:
+    def add_subtask(self, user_id: int, task_id: int, subtask_data: SubtaskCreateSchema) -> SubtaskSchema:
         user_is_owner = self.check_task_ownership(user_id, task_id)
 
+        if subtask_data.performer_id == -1:
+            subtask_data.performer_id = user_id
+            
         if not user_is_owner:
-            return None
-        
-        subtask = self.__to_subtask(task_id, subtask_data)
+            raise PermissionError()
 
-        return self.subtask_repository.add_subtask(subtask)
+        return self.subtask_repository.add_subtask(task_id=task_id, user_id=user_id, subtask_schema=subtask_data)
 
-    def get_subtask(self, user_id: int, task_id: int) -> Subtask:
+    def get_subtask(self, user_id: int, task_id: int) -> SubtaskSchema:
         subtask = self.subtask_repository.find_subtask(task_id)
-
-        if subtask is None:
-            return None
         
         user_is_owner = self.check_task_ownership(user_id, subtask.task_id)
 
         if not user_is_owner:
-            return None
+            raise PermissionError()
         
         return subtask
     
-    def get_task_subtasks(self, user_id: int, task_id: int) -> list[Subtask]:
+    def get_task_subtasks(self, user_id: int, task_id: int) -> list[SubtaskSchema]:
         user_is_owner = self.check_task_ownership(user_id, task_id)
         
         if not user_is_owner:
-            return None
+            raise PermissionError()
         
         return self.subtask_repository.get_task_subtasks(task_id)
     
-    def remove_subtask(self, user_id: int, subtask_id: int) -> Subtask | None:
-        subtask = self.get_subtask(user_id, subtask_id)
-
-        if subtask is None:
-            return None
-        
+    def remove_subtask(self, user_id: int, subtask_id: int) -> SubtaskSchema:
         return self.subtask_repository.remove_subtask(subtask_id)
 
-    def update_subtask(self, user_id: int, subtask_id: int, subtask_data: SubtaskUpdateSchema) -> Subtask | None:
-        subtask = self.get_subtask(user_id, subtask_id)
-
-        if subtask is None:
-            return None
-        
-        subtask.performer_id=subtask_data.performer_id
-        subtask.name=subtask_data.name, 
-        subtask.description=subtask_data.description,
-        subtask.performer_id=subtask_data.performer_id,
-        subtask.deadline=subtask_data.deadline,
-        subtask.priority=subtask_data.priority,
-        
-        return self.subtask_repository.update_subtask(subtask)
+    def update_subtask(self, user_id: int, subtask_id: int, subtask_data: SubtaskUpdateSchema) -> SubtaskSchema:
+        return self.subtask_repository.update_subtask(subtask_id, subtask_data)
 
     def check_subtask_ownership(self, user_id: int, subtask_id: int) -> bool:
         return self.subtask_repository.check_subtask_ownership(user_id, subtask_id)
@@ -153,12 +182,12 @@ class SubtaskService:
     def set_performer(self, task_id: int, performer_id: int) -> Task | dict:
         task = self.subtask_repository.find_subtask(task_id)
         
-        if task is None:
-            return {'error_code': 404, 'detail': 'Такой таски не существует!'}
-        
         task.performer_id = performer_id
         
         return self.subtask_repository.update_subtask(task)
     
     def get_allocated_subtasks(self, user_id: int):
         return self.subtask_repository.get_allocated_subtasks(user_id)
+
+    def get_authored_subtasks(self, user_id: int):
+        return self.subtask_repository.get_authored_subtasks(user_id)

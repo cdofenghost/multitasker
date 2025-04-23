@@ -47,7 +47,7 @@ class TaskRepository:
         task = self.db.query(Task).filter(Task.id == task_id).first()
 
         if task is None:
-            return NoResultFound()
+            raise NoResultFound()
         
         return self.__to_task_schema(task)
     
@@ -63,11 +63,12 @@ class TaskRepository:
         return [self.__to_task_schema(task)
                 for task in self.db.query(Task).filter(Task.author_id == user_id)]
 
-    def get_project_tasks(self, project_id: int) -> list[Task]:
+    # Фильтр схема на распаковку **filter.model_dump()
+    def get_project_tasks(self, project_id: int) -> list[TaskSchema]:
         return [self.__to_task_schema(task) 
                 for task in self.db.query(Task).filter(Task.project_id == project_id)]
     
-    def remove_task(self, id: int) -> Task | None:
+    def remove_task(self, id: int) -> TaskSchema:
         task = self.find_task(id)
         
         self.db.query(Task).filter(task.id == id).delete()
@@ -75,12 +76,31 @@ class TaskRepository:
 
         return self.__to_task_schema(task)
     
-    def update_task(self, task: TaskUpdateSchema) -> TaskSchema:
-        
-        self.db.merge(task)
+    def update_task(self, task_id: int, task_data: TaskUpdateSchema) -> TaskSchema:
+        task = self.find_task(task_id)
+
+        task.performer_id=task_data.performer_id
+        task.name=task_data.name
+        task.description=task_data.description
+        task.deadline=task_data.deadline
+        task.priority=task_data.priority
+        task.status=task_data.status
+        task.date_updated = datetime.now()
+
+        print(task)
+        self.db.merge(Task(name=task.name,
+                    description=task.description,
+                    performer_id=task.performer_id,
+                    author_id=task.author_id,
+                    project_id=task.project_id,
+                    deadline=task.deadline,
+                    date_created=datetime.now(),
+                    date_updated=datetime.now(),
+                    status=1,
+                    priority=task.priority))
         self.db.commit()
 
-        return self.__to_task_schema(task)
+        return task
 
     def check_project_ownership(self, user_id: int, project_id: int) -> bool:
         from ..models.project import Project
@@ -96,6 +116,10 @@ class TaskRepository:
         print(f"Ownership: {False if category is None else True}")
         return False if category is None else True
 
+    def count_subtasks(self, task_id: int) -> int:
+        from ..models.subtask import Subtask
+        return len(self.db.query(Subtask).filter(Subtask.task_id == task_id))
+    
     def check_task_ownership(self, user_id: int, task_id: int) -> bool:
         task_author = self.db.query(Task).filter(Task.id == task_id).first()
         
@@ -138,6 +162,11 @@ class TaskService:
 
         return self.task_repository.add_task(project_id=project_id, user_id=user_id, task_schema=task_data)
 
+    def get_tasks(self) -> TaskSchema:
+        tasks = self.task_repository.get_tasks()
+
+        return tasks
+    
     def get_task(self, user_id: int, task_id: int) -> TaskSchema:
         task = self.task_repository.find_task(task_id)
         
@@ -152,32 +181,15 @@ class TaskService:
         user_is_owner = self.check_project_ownership(user_id, project_id)
         
         if not user_is_owner:
-            return None
+            raise PermissionError()
         
         return self.task_repository.get_project_tasks(project_id)
     
     def remove_task(self, user_id: int, task_id: int) -> TaskSchema:
-        task = self.get_task(user_id, task_id)
-
-        if task is None:
-            return None
-        
         return self.task_repository.remove_task(task_id)
 
-    def update_task(self, user_id: int, task_id: int, task_data: TaskUpdateSchema) -> Task | None:
-        task = self.get_task(user_id, task_id)
-
-        if task is None:
-            return None
-        
-        task.performer_id=task_data.performer_id
-        task.name=task_data.name, 
-        task.description=task_data.description,
-        task.performer_id=task_data.performer_id,
-        task.deadline=task_data.deadline,
-        task.priority=task_data.priority,
-        
-        return self.task_repository.update_task(task)
+    def update_task(self, user_id: int, task_id: int, task_data: TaskUpdateSchema) -> TaskSchema:
+        return self.task_repository.update_task(task_id, task_data)
 
     def check_project_ownership(self, user_id: int, project_id: int) -> bool:
         return self.task_repository.check_project_ownership(user_id, project_id)
@@ -188,12 +200,18 @@ class TaskService:
     def set_performer(self, task_id: int, performer_id: int) -> TaskSchema:
         task = self.task_repository.find_task(task_id)
         
-        task.performer_id = performer_id
-        
-        return self.task_repository.update_task(task)
+        return self.task_repository.update_task(task, TaskUpdateSchema(name=task.name, 
+                                                                       description=task.description,
+                                                                       deadline=task.deadline,
+                                                                       status=task.status,
+                                                                       priority=task.priority,
+                                                                       performer_id=performer_id))
     
     def get_allocated_tasks(self, user_id: int) -> list[TaskSchema]:
         return self.task_repository.get_allocated_tasks(user_id)
     
     def get_authored_tasks(self, user_id: int) -> list[TaskSchema]:
         return self.task_repository.get_authored_tasks(user_id)
+    
+    def count_subtasks(self, task_id: int) -> int:
+        return self.task_repository.count_subtasks(task_id)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from ..database import Base
 
@@ -9,6 +9,7 @@ class User(Base):
     name = Column(String)
     email = Column(String, unique=True)
     icon = Column(String)
+    role = Column(String, default="user")
     hashed_password = Column(String)
 
     # 1:M
